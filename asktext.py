@@ -57,6 +57,7 @@ except ImportError:
     try:
         import Tkinter as Tk
         import tkMessageBox as TkMsgBoxes
+        import tkFileDialog as TkFileDialogs
 
         TOOLKIT = TK
     except ImportError:
@@ -121,9 +122,10 @@ def error_dialog(parent, title, message, detailed_message=None):
 
 
 class AskerFactory(object):
-    def asker(self, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment, current_texcmd):
+    def asker(self, version_str, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment, current_texcmd):
         """
         Return the best possible GUI variant depending on the installed components
+        :param version_str: A string describing the version of textext
         :param current_scale_factor:
         :param text: Prefilled text
         :param preamble_file: Preamble file path
@@ -134,10 +136,10 @@ class AskerFactory(object):
         :return: an instance of AskText
         """
         if TOOLKIT == TK:
-            return AskTextTK(text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
+            return AskTextTK(version_str, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
                              current_texcmd)
         elif TOOLKIT in (GTK, GTKSOURCEVIEW):
-            return AskTextGTKSource(text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
+            return AskTextGTKSource(version_str, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
                                     current_texcmd)
 
 
@@ -149,7 +151,7 @@ class AskText(object):
                         "middle left", "middle center", "middle right",
                         "bottom left", "bottom center", "bottom right"]
 
-    def __init__(self, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
+    def __init__(self, version_str, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
                  current_texcmd):
         if len(text) > 0:
             self.text = text
@@ -159,6 +161,7 @@ class AskText(object):
             else:
                 self.text = ""
 
+        self.textext_version = version_str
         self.callback = None
         self.global_scale_factor = global_scale_factor
         self.current_scale_factor = current_scale_factor
@@ -214,9 +217,9 @@ if TOOLKIT == TK:
     class AskTextTK(AskText):
         """TK GUI for editing TexText objects"""
 
-        def __init__(self, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
+        def __init__(self, version_str, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
                      current_texcmd):
-            super(AskTextTK, self).__init__(text, preamble_file, global_scale_factor, current_scale_factor,
+            super(AskTextTK, self).__init__(version_str, text, preamble_file, global_scale_factor, current_scale_factor,
                                             current_alignment, current_texcmd)
             self._frame = None
             self._scale = None
@@ -250,7 +253,7 @@ if TOOLKIT == TK:
             self.callback = callback
 
             root = Tk.Tk()
-            root.title("TexText")
+            root.title("TexText {0}".format(self.textext_version))
 
             self._frame = Tk.Frame(root)
             self._frame.pack()
@@ -260,8 +263,13 @@ if TOOLKIT == TK:
             label = Tk.Label(box, text="Preamble file:")
             label.pack(pady=2, padx=5, anchor="w")
             self._preamble = Tk.Entry(box)
-            self._preamble.pack(expand=True, fill="x", pady=5, padx=5)
+            self._preamble.pack(expand=True, fill="x", ipady=4, pady=5, padx=5, side="left", anchor="e")
             self._preamble.insert(Tk.END, self.preamble_file)
+
+            self._askfilename_button = Tk.Button(box, text="Select...",
+                                           command=self.select_preamble_file)
+            self._askfilename_button.pack(ipadx=10, ipady=4, pady=5, padx=5, side="left")
+
             box.pack(fill="x", pady=5, expand=True)
 
             # Frame box for tex command
@@ -374,13 +382,21 @@ if TOOLKIT == TK:
             self._scale.delete(0, "end")
             self._scale.insert(0, self.global_scale_factor)
 
+        def select_preamble_file(self):
+            file_name = TkFileDialogs.askopenfilename(initialdir=os.path.dirname(self._preamble.get()),
+                                                      title="Select preamble file",
+                                                      filetypes=(("LaTeX files", "*.tex"), ("all files", "*.*")))
+            if file_name is not None:
+                self._preamble.delete(0, Tk.END)
+                self._preamble.insert(Tk.END, file_name)
+
 if TOOLKIT in (GTK, GTKSOURCEVIEW):
     class AskTextGTKSource(AskText):
         """GTK + Source Highlighting for editing TexText objects"""
 
-        def __init__(self, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
+        def __init__(self, version_str, text, preamble_file, global_scale_factor, current_scale_factor, current_alignment,
                      current_texcmd):
-            super(AskTextGTKSource, self).__init__(text, preamble_file, global_scale_factor, current_scale_factor,
+            super(AskTextGTKSource, self).__init__(version_str, text, preamble_file, global_scale_factor, current_scale_factor,
                                                    current_alignment, current_texcmd)
             self._preview = None
             self._scale_adj = None
@@ -679,6 +695,9 @@ if TOOLKIT in (GTK, GTKSOURCEVIEW):
             Clear the preamble file setting
             """
             self.preamble_file = "default_packages.tex"
+            self.set_preamble()
+
+        def set_preamble(self):
             if hasattr(gtk, 'FileChooserButton'):
                 self._preamble_widget.set_filename(self.preamble_file)
             else:
@@ -699,7 +718,7 @@ if TOOLKIT in (GTK, GTKSOURCEVIEW):
             """
             window = gtk.Window(gtk.WINDOW_TOPLEVEL)
             window.set_border_width(2)
-            window.set_title('Enter LaTeX Formula - TexText')
+            window.set_title('Enter LaTeX Formula - TexText {0}'.format(self.textext_version))
 
             # File chooser and Scale Adjustment
             if hasattr(gtk, 'FileChooserButton'):
@@ -708,7 +727,7 @@ if TOOLKIT in (GTK, GTKSOURCEVIEW):
             else:
                 self._preamble_widget = gtk.Entry()
 
-            self.clear_preamble()
+            self.set_preamble()
 
             # --- Preamble file ---
             preamble_delete = gtk.Button(label="Clear")

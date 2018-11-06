@@ -40,7 +40,7 @@ Florent Becker and Vladislav Gavryusev for contributions.
 .. _InkLaTeX: http://www.kono.cis.iwate-u.ac.jp/~arakit/inkscape/inklatex.html
 """
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 __docformat__ = "restructuredtext en"
 
 import os
@@ -51,7 +51,7 @@ import subprocess
 
 DEBUG = False
 
-MAC = "Mac OS"
+MAC = "Darwin"
 WINDOWS = "Windows"
 PLATFORM = platform.system()
 
@@ -271,11 +271,18 @@ class TexText(inkex.Effect):
 
             if not preamble_file:
                 preamble_file = self.options.preamble_file
+            else:
+                # Check if preamble file exists at the specified absolute path location. If not, check to find
+                # the file in the default path. If this fails, too, fallback to the default.
+                if not os.path.exists(preamble_file):
+                    preamble_file = os.path.join(os.path.dirname(self.options.preamble_file), os.path.basename(preamble_file))
+                    if not os.path.exists(preamble_file):
+                        preamble_file = self.options.preamble_file
 
             if not os.path.isfile(preamble_file):
                 preamble_file = ""
 
-            asker = AskerFactory().asker(text, preamble_file, global_scale_factor, current_scale,
+            asker = AskerFactory().asker(__version__, text, preamble_file, global_scale_factor, current_scale,
                                          current_alignment=alignment, current_texcmd=current_tex_command)
             try:
 
@@ -1127,11 +1134,13 @@ class SvgElement(object):
         """
         scale_transform = st.parseTransform("scale(%f)" % relative_scale)
 
-        old_transform = ref_node.get_attrib('transform')
-        composition = st.parseTransform(old_transform, scale_transform)
+        old_transform = st.parseTransform(ref_node.get_attrib('transform'))
 
         # Account for vertical flipping of pstoedit nodes when recompiled via pdf2svg and vice versa
-        composition = self._check_and_fix_transform(ref_node, composition)
+        revert_flip = self._check_and_fix_transform(ref_node, [[1,0,0],[0,1,0]])
+        composition = st.composeTransform(old_transform, revert_flip)
+
+        composition = st.composeTransform(scale_transform, composition)
 
         # keep alignment point of drawing intact, calculate required shift
         self.set_attrib('transform', st.formatTransform(composition))
