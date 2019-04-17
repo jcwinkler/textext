@@ -1,10 +1,12 @@
 language: python
+python: '2.7'
 
 branches:
   only:
   - master
   - develop
   - feature/add_travis_deploy
+  - hotfix/travis-python-27
 
 virtualenv:
   system_site_packages: true
