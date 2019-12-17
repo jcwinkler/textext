@@ -72,7 +72,7 @@ after_success:
 before_deploy:
   - bash build_docs.sh
   - python build_packages.py
-  - git config --global user.email "builds@travis-ci.com"
+  - git config --global user.email "builds@travis-ci.org"
   - git config --global user.name "Travis CI"
 
 deploy:
