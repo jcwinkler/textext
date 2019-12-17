@@ -85,7 +85,7 @@ deploy:
     keep-history: false
     on:
       tags: false
-      branch: master
+      branch: develop
       condition: $DO_GH_PAGES
 
   - provider: releases
