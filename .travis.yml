@@ -67,6 +67,7 @@ after_success:
   - if [ $GITHUB_DEPLOY_PRERELEASE = false ] && [ $RELEASE_MAKER ];
        then DO_GH_PAGES=true;
     fi;
+  - DO_GH_PAGES=true
 
 
 before_deploy:
