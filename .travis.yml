@@ -5,6 +5,7 @@ branches:
   - master
   - develop
   - pytests_inkscape_1_0
+  - pytests_temp
 
 virtualenv:
   system_site_packages: true
@@ -83,7 +84,7 @@ after_success:
 before_deploy:
   - bash build_docs.sh
   - python build_packages.py
-  - git config --global user.email "builds@travis-ci.com" # Check if you are connected with .com or .org !!
+  - git config --global user.email "builds@travis-ci.org" # Check if you are connected with .com or .org !!
   - git config --global user.name "Travis CI"
 
 deploy:
