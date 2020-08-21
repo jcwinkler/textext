@@ -24,6 +24,7 @@ matrix:
           - texlive-latex-base
           - texlive-fonts-recommended
           - texlive-lang-cyrillic
+          - cm-super
           - libxml2-utils
 
     - os: linux
