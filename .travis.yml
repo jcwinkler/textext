@@ -5,6 +5,7 @@ branches:
   - master
   - develop
   - pytests_inkscape_1_0
+  - pytests_temp
 
 virtualenv:
   system_site_packages: true
