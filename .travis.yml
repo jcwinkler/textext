@@ -4,7 +4,7 @@ branches:
   only:
   - master
   - develop
-  - pytests_inkscape_1_0
+  - travis_sign_releases
 
 virtualenv:
   system_site_packages: true
@@ -41,61 +41,83 @@ matrix:
       env:
         - RELEASE_MAKER=true
 
+
 before_script:
-   - python -m pip install pytest lxml Pillow
-   - sudo add-apt-repository --yes ppa:inkscape.dev/stable
-   - sudo apt update
-   - sudo apt install inkscape
-   - python test_installation_script.py 2> /dev/null
-   - python setup.py
-   - wget https://gitlab.com/inkscape/extensions/raw/master/inkscape.extension.rng
+  - echo "Before"
+  - python -m pip install pytest lxml Pillow
+  - sudo add-apt-repository --yes ppa:inkscape.dev/stable
+  - sudo apt update
+  - sudo apt install inkscape
+  - python test_installation_script.py 2> /dev/null
+  - python setup.py
+  - wget https://gitlab.com/inkscape/extensions/raw/master/inkscape.extension.rng
 
 
 script:
+  - echo "Script..."
   - export PYTHONPATH="`inkscape --system-data-directory`/extensions:$HOME/.config/inkscape/extensions/"
   - python -m pytest --verbose -s pytests
   - xmllint --noout --relaxng inkscape.extension.rng textext/textext.inx
+
+
 after_success:
-  # Put a tag if version has changed and (version contains "-dev" on develop) or (version DOES NOT contain "-dev" on master)
+  # If this environment is a release maker: Put a tag if version has changed and
+  # (version contains "-dev" on develop) or (version DOES NOT contain "-dev" on master)
   # Reminder: grep -q returns 0 if any match has been found, otherwise nonzero.
-  - VERSION_CHANGED=$(git diff --no-commit-id --name-only -r $TRAVIS_COMMIT_RANGE | grep -q textext/VERSION; echo $?;)
-  - VERSION=$(head -n 1 textext/VERSION)
-  - echo 'Version changed                     :' $( [ "$VERSION_CHANGED" == 0 ] && echo "Yes" || echo "No")
-  - echo 'Version                             :' $VERSION
-  - echo 'Travis branch                       :' $TRAVIS_BRANCH
-  - echo 'Is develop release                  :' $( [ $( (echo $VERSION | grep -q "\-dev"); echo $?) == 0 ]  && echo "Yes" || echo "No")
-  - echo 'Condition for tagging met           :' $( [ $( ( [ "$TRAVIS_BRANCH" == "develop" ] && (echo $VERSION | grep -q "\-dev") ) || ( [ "$TRAVIS_BRANCH" == "master" ] && (echo $VERSION | grep -v -q "\-dev") ) ; echo $?) == 0 ] && echo "Yes" || echo "No")
-  - echo 'Is a release maker                  :' $( [ "RELEASE_MAKER"==true ] && echo "Yes" || echo "No")
-  - echo 'Condition for pre-release met       :' $( [ $( (echo $VERSION | grep -q "\-"); echo $?) == 0 ] && echo "Yes" || echo "No")
-  - echo '(echo $VERSION | grep "\-dev")      :' $( (echo $VERSION | grep "\-dev"); echo $?) ' --> -q --> ' $( (echo $VERSION | grep -q "\-dev"); echo $?)
-  - echo '(echo $VERSION | grep -v "\-dev")   :' $( (echo $VERSION | grep -v "\-dev"); echo $?) ' --> -q --> ' $( (echo $VERSION | grep -v -q "\-dev"); echo $?)
-  - if [[ $VERSION_CHANGED = 0 ]] &&  ( ( [ "$TRAVIS_BRANCH" == "develop" ] && (echo $VERSION | grep -q "\-dev") ) || ( [ "$TRAVIS_BRANCH" == "master" ] && (echo $VERSION | grep -v -q "\-dev") ) ) ; then
-      git tag -l $VERSION | grep -q $VERSION || git tag $VERSION -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER";
-      if [[ $RELEASE_MAKER = true ]];
-         then DO_RELEASE=true;
-      fi;
-    fi;
+  # The tag is signed by the TexText signing key which is temporarily decrypted during this procedure.
+  - |
+    if [[ $RELEASE_MAKER = true ]] ; then
+      VERSION_CHANGED=$(git diff --no-commit-id --name-only -r $TRAVIS_COMMIT_RANGE | grep -q textext/VERSION; echo $?;)
+      VERSION=$(head -n 1 textext/VERSION)
+      echo 'Version changed                     :' $( [ "$VERSION_CHANGED" == 0 ] && echo "Yes" || echo "No")
+      echo 'Version                             :' $VERSION
+      echo 'Travis branch                       :' $TRAVIS_BRANCH
+      echo 'Is develop release                  :' $( [ $( (echo $VERSION | grep -q "\-dev"); echo $?) == 0 ]  && echo "Yes" || echo "No")
+      echo 'Condition for tagging met           :' $( [ $( ( [ "$TRAVIS_BRANCH" == "develop" ] && (echo $VERSION | grep -q "\-dev") ) || ( [ "$TRAVIS_BRANCH" == "master" ] && (echo $VERSION | grep -v -q "\-dev") ) ; echo $?) == 0 ] && echo "Yes" || echo "No")
+      echo 'Is a release maker                  :' $( [ "RELEASE_MAKER"==true ] && echo "Yes" || echo "No")
+      echo 'Condition for pre-release met       :' $( [ $( (echo $VERSION | grep -q "\-"); echo $?) == 0 ] && echo "Yes" || echo "No")
+      echo '(echo $VERSION | grep "\-dev")      :' $( (echo $VERSION | grep "\-dev"); echo $?) ' --> -q --> ' $( (echo $VERSION | grep -q "\-dev"); echo $?)
+      echo '(echo $VERSION | grep -v "\-dev")   :' $( (echo $VERSION | grep -v "\-dev"); echo $?) ' --> -q --> ' $( (echo $VERSION | grep -v -q "\-dev"); echo $?)
+      if  [[ $VERSION_CHANGED = 0 ]] &&  ( ( [ "$TRAVIS_BRANCH" == "develop" ] && (echo $VERSION | grep -q "\-dev") ) || ( [ "$TRAVIS_BRANCH" == "master" ] && (echo $VERSION | grep -v -q "\-dev") ) ) ; then
+          echo "Doing a release..."
+          DO_RELEASE=true
+      fi
+    fi
+
+
+before_deploy:
+  # This is only called when DO_RELEASE=true.
+  # Create gpg signed tag, for that purpose we do need to decrypt the passphrase-free signing key first
+  # To be absolutely sure that no secrets are written to the logs use  > /dev/null 2>&1  at the
+  # corresponding places
+  # Finally the tag is pushed to the repo so that github does not automatically creates a tag during deployment
+  - git config --global user.email "builds@travis-ci.com" # Check if you are connected with .com or .org !!
+  - git config --global user.name "Travis CI"
+  - GNUPGHOME=./.ci/.gnupg
+  - mkdir $GNUPGHOME -m700
+  - echo $KEY_DECRYPTION_PWD | gpg --batch --passphrase-fd 0 .ci/textext_sub_sec.asc.gpg
+  - gpg --import ./.ci/textext_sub_sec.asc
+  - rm ./.ci/textext_sub_sec.asc # My paranoia...
+  - git tag -l $VERSION | grep -q $VERSION || git tag -s -u 0FA721D76A2537D9 -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER" $VERSION > /dev/null 2>&1
+  - rm -rf $GNUPGHOME
+  - git push -q https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git $TRAVIS_BRANCH --tags > /dev/null 2>&1
   - if echo $VERSION | grep -q "\-" ;
       then export GITHUB_DEPLOY_PRERELEASE=true;
       else export GITHUB_DEPLOY_PRERELEASE=false;
     fi
-  - if [ $GITHUB_DEPLOY_PRERELEASE = false ] && [ $RELEASE_MAKER ];
-       then DO_GH_PAGES=true;
+  - if [ $GITHUB_DEPLOY_PRERELEASE = false ] ; then
+       DO_GH_PAGES=true;
+       bash build_docs.sh;
     fi;
-
-
-before_deploy:
-  - bash build_docs.sh
   - python build_packages.py
-  - git config --global user.email "builds@travis-ci.com" # Check if you are connected with .com or .org !!
-  - git config --global user.name "Travis CI"
+
 
 deploy:
   - provider: pages
     verbose: true
     local-dir: docs/build/html
     skip-cleanup: true
-    github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+    github-token: $GITHUB_TOKEN
     keep-history: false
     on:
       tags: false
@@ -110,5 +132,5 @@ deploy:
     file: assets/*
     on:
       tags: false
-      all_branches: true # only develop and master are activated in travis
+      all_branches: true
       condition: $DO_RELEASE
