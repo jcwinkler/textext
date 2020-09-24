@@ -61,10 +61,10 @@ script:
 
 
 after_success:
-  # If this environment is a release maker: Put a tag if version has changed and
+  # If this environment is a release maker: Check if a release needs to be deployed.
+  # This is the case of the version number has changed and
   # (version contains "-dev" on develop) or (version DOES NOT contain "-dev" on master)
   # Reminder: grep -q returns 0 if any match has been found, otherwise nonzero.
-  # The tag is signed by the TexText signing key which is temporarily decrypted during this procedure.
   - |
     if [[ $RELEASE_MAKER = true ]] ; then
       VERSION_CHANGED=$(git diff --no-commit-id --name-only -r $TRAVIS_COMMIT_RANGE | grep -q textext/VERSION; echo $?;)
@@ -87,19 +87,20 @@ after_success:
 
 before_deploy:
   # This is only called when DO_RELEASE=true.
-  # Create gpg signed tag, for that purpose we do need to decrypt the passphrase-free signing key first
-  # To be absolutely sure that no secrets are written to the logs use  > /dev/null 2>&1  at the
-  # corresponding places
-  # Finally the tag is pushed to the repo so that github does not automatically creates a tag during deployment
+  # Create a gpg signed tag, for that purpose we do need to decrypt the passphrase-free
+  # signing key first. To be absolutely sure that no secrets are written to the logs
+  # use  > /dev/null 2>&1  at the corresponding places
+  # The tag is then pushed to the repo so that github does not automatically
+  # creates one during deployment. Finally the assets are signed, too
+  - GNUPGHOME=./.ci/.gnupg
+  - ASSETS_DIR=assets
   - git config --global user.email "builds@travis-ci.com" # Check if you are connected with .com or .org !!
   - git config --global user.name "Travis CI"
-  - GNUPGHOME=./.ci/.gnupg
   - mkdir $GNUPGHOME -m700
   - echo $KEY_DECRYPTION_PWD | gpg --batch --passphrase-fd 0 .ci/textext_sub_sec.asc.gpg
   - gpg --import ./.ci/textext_sub_sec.asc
   - rm ./.ci/textext_sub_sec.asc # My paranoia...
   - git tag -l $VERSION | grep -q $VERSION || git tag -s -u 0FA721D76A2537D9 -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER" $VERSION > /dev/null 2>&1
-  - rm -rf $GNUPGHOME
   - git push -q https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git $TRAVIS_BRANCH --tags > /dev/null 2>&1
   - if echo $VERSION | grep -q "\-" ;
       then export GITHUB_DEPLOY_PRERELEASE=true;
@@ -110,6 +111,10 @@ before_deploy:
        bash build_docs.sh;
     fi;
   - python build_packages.py
+  - for f in `ls -1 $ASSETS_DIR`; do
+      gpg -u 0FA721D76A2537D9 --detach-sig --armor --output $ASSETS_DIR/$f.sig $ASSETS_DIR/$f ;
+    done
+  - rm -rf $GNUPGHOME
 
 
 deploy:
@@ -129,7 +134,7 @@ deploy:
     prerelease: $GITHUB_DEPLOY_PRERELEASE
     skip_cleanup: true
     file_glob: true
-    file: assets/*
+    file: $ASSETS_DIR/*
     on:
       tags: false
       all_branches: true
