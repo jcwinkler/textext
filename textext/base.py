@@ -467,7 +467,9 @@ class TexText(inkex.EffectExtension):
             node.__class__ = TexTextElement
 
             try:
-                text = node.get_meta('text')
+                # TexText 1.2.0 stored its nodes unescaped. We have account for that
+                textext_version = node.get_meta('version', default='??')
+                text = node.get_meta('text', default=None, escaping=textext_version != '1.2.0')
                 preamble = node.get_meta('preamble')
                 scale = float(node.get_meta('scale', 1.0))
 
@@ -708,13 +710,21 @@ class TexTextElement(inkex.Group):
 
     def set_meta(self, key, value):
         ns_key = '{{{ns}}}{key}'.format(ns=TEXTEXT_NS, key=key)
-        self.set(ns_key, value)
+        self.set(ns_key, str(value).encode('unicode_escape').decode('utf-8'))
+        # self.set(ns_key, value)
         assert self.get_meta(key) == value, (self.get_meta(key), value)
 
-    def get_meta(self, key, default=None):
+    def get_meta(self, key, default=None, escaping=True):
         try:
             ns_key = '{{{ns}}}{key}'.format(ns=TEXTEXT_NS, key=key)
-            value = self.get(ns_key)
+            if escaping:
+                # Escaping is default, however
+                try:
+                    value = self.get(ns_key).encode('utf-8').decode('unicode_escape')
+                except UnicodeDecodeError:
+                    value = self.get(ns_key)
+            else:
+                value = self.get(ns_key)
             if value is None:
                 raise AttributeError('{} has no attribute `{}`'.format(self, key))
             return value
