@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TexText for Inkscape 1.x on MacOS &mdash; TexText 1.8.0-dev2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/logo.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Advanced installation options" href="advanced.html" />
+    <link rel="prev" title="TexText for Inkscape 1.x on Windows" href="windows.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> TexText
+          </a>
+              <div class="version">
+                1.8
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="linux.html"><strong>TexText for Inkscape 1.x</strong> on Linux</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windows.html"><strong>TexText for Inkscape 1.x</strong> on Windows</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><strong>TexText for Inkscape 1.x</strong> on MacOS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#method-1-use-inkscape-dmg-installer-optionally-together-with-homebrew-python">Method 1: Use Inkscape DMG installer (optionally together with Homebrew Python)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#method-2-use-homebrew-inkscape">Method 2: Use Homebrew Inkscape</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#preparation">Preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#download-and-install-textext">Download and install <strong>TexText for Inkscape 1.x</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced installation options</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../usage/gui.html">The <strong>TexText</strong> GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Deprecated versions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../textext_0x/textext_0x.html">TexText 0.11 for Inkscape 0.92</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Credits</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Changelog</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change log</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TexText</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><strong>TexText for Inkscape 1.x</strong> on MacOS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/install/macos.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="textext-on-macos">
+<span id="macos-install"></span><h1><strong>TexText for Inkscape 1.x</strong> on MacOS<a class="headerlink" href="#textext-on-macos" title="Permalink to this headline"></a></h1>
+<div class="admonition attention" id="macos-install-preparation">
+<p class="admonition-title">Attention</p>
+<p>Inkscape for MacOS is shipped as a <code class="code highlight bash docutils literal notranslate"><span class="pre">dmg</span></code>-file from the Inkscape
+website. However, on some systems the extensions and Python subsystem
+shipped together with this installer seems to be broken. This is a problem
+of Inkscape development, not of <strong>TexText for Inkscape 1.x</strong>. Hence, two
+alternative approaches are shown here together with some steps how to
+setup a Python installation which works together with the Inkscape extension
+system.</p>
+<p>Help us and other MacOS users by posting an
+<a class="reference external" href="https://github.com/textext/textext/issues/new/choose">issue on github</a>
+if something goes wrong or you have ideas how to improve the procedure!</p>
+</div>
+<section id="method-1-use-inkscape-dmg-installer-optionally-together-with-homebrew-python">
+<h2>Method 1: Use Inkscape DMG installer (optionally together with Homebrew Python)<a class="headerlink" href="#method-1-use-inkscape-dmg-installer-optionally-together-with-homebrew-python" title="Permalink to this headline"></a></h2>
+<ol class="arabic">
+<li><p>Install Inkscape: Download the installer from the
+<a class="reference external" href="https://inkscape.org/release">Inkscape download site</a>.</p></li>
+<li><p>Install Inkscape. Verify that Inkscape launches and is of version
+1.x.</p></li>
+<li><p>Download the most recent package of <strong>TexText for Inkscape 1.x</strong> from
+<a class="reference external" href="https://github.com/textext/textext/releases/tag/1.8.0-dev2#release">GitHub release page</a>
+(direct link: <a class="reference external" href="https://github.com/textext/textext/releases/download/1.8.0-dev2/TexText-MacOS-1.8.0-dev2.zip">.zip</a>)</p>
+<p>Extract the package and change into the created directory.</p>
+</li>
+<li><p>Next we try to install and run <strong>TexText for Inkscape 1.x</strong>. If the installation or the launch
+of <strong>TexText for Inkscape 1.x</strong> fails a method is shown how to fix the problem.</p>
+<p>Run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 setup.py --pdflatex-executable<span class="o">=</span><span class="k">$(</span>which pdflatex<span class="k">)</span> --skip-requirements-check
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python setup.py --pdflatex-executable<span class="o">=</span><span class="k">$(</span>which pdflatex<span class="k">)</span> --skip-requirements-check
+</pre></div>
+</div>
+<p>The script  will copy the required files into the user’s Inkscape
+configuration directory (usually this is <code class="docutils literal notranslate"><span class="pre">~/Library/Application</span> <span class="pre">Support/org.inkscape.Inkscape/config/inkscape/extensions</span></code>)</p>
+<p>See <a class="reference internal" href="advanced.html#advanced-install"><span class="std std-ref">Advanced installation options</span></a> for further options provided by
+<code class="code highlight bash docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
+</li>
+<li><p>Launch Inkscape and try to run <strong>TexText for Inkscape 1.x</strong> (Consult the <a class="reference internal" href="../usage/gui.html#gui"><span class="std std-ref">usage instructions</span></a>).
+If <strong>TexText for Inkscape 1.x</strong> fails to launch go to step 6. Otherwise you are done.</p></li>
+<li><p>The Python installation shipped together with Inkscape seems to be broken. Hence,
+we need to install one manually. Assuming you have Homebrew installed, install
+Python 3.9:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew install python@3.9
+</pre></div>
+</div>
+</li>
+<li><p>Then install the Tkinter GUI-library, NumPy and PyGObject:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew install python-tk@3.9
+brew install numpy
+brew install pygobject3
+</pre></div>
+</div>
+</li>
+<li><p>Install the lxml-tools required by the Inkscape extensions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">$(</span>brew --prefix<span class="k">)</span>/opt/python@3.9/libexec/bin/pip install lxml
+</pre></div>
+</div>
+</li>
+<li><p>Determine the path of the Homebrew python3 executable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>which <span class="k">$(</span>brew --prefix<span class="k">)</span>/opt/python@3.9/libexec/bin/python3
+</pre></div>
+</div>
+</li>
+<li><p>Navigate into the directory
+<code class="code highlight bash docutils literal notranslate"><span class="pre">/Users/&lt;your</span> <span class="pre">username&gt;/Library/Application</span> <span class="pre">Support/org.inkscape.Inkscape/config/inkscape</span></code>.
+(Replace &lt;your username&gt; by your MacOS user name)</p></li>
+<li><p>Open the file <code class="code highlight bash docutils literal notranslate"><span class="pre">preferences.xml</span></code> and navigate to the line that says
+<code class="code highlight bash docutils literal notranslate"><span class="nv"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="s2"><span class="pre">&quot;extensions&quot;</span></span></code>. Add a line <code class="code highlight bash docutils literal notranslate"><span class="pre">python-interpreter</span><span class="o"><span class="pre">=</span></span><span class="s2"><span class="pre">&quot;&lt;python</span> <span class="pre">path&gt;&quot;</span></span></code>
+where <code class="code highlight bash docutils literal notranslate"><span class="pre">&lt;python</span> <span class="pre">path&gt;</span></code> has to be replaced by the path determined in step 9.
+After this operation the entry should look like this:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;group</span>
+    <span class="na">id=</span><span class="s">&quot;extensions&quot;</span>
+    <span class="na">python-interpreter=</span><span class="s">&quot;&lt;python path&gt;&quot;</span>
+<span class="nt">/&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p>If the installation of <strong>TexText for Inkscape 1.x</strong> in step 4 failed try to install it with the
+following command, otherwise go to step 13:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">$(</span>brew --prefix<span class="k">)</span>/opt/python@3.9/libexec/bin/python3 setup.py --pdflatex-executable<span class="o">=</span><span class="k">$(</span>which pdflatex<span class="k">)</span> --skip-requirements-check
+</pre></div>
+</div>
+</li>
+<li><p>Launch Inkscape and try to run <strong>TexText for Inkscape 1.x</strong>. In case of success you should see at least
+the Tkinter GUI which is a simplified version of the GTK gui described in the
+<a class="reference internal" href="../usage/gui.html#gui"><span class="std std-ref">usage instructions</span></a>.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In case of installation problems refer to the <a class="reference internal" href="../usage/troubleshooting.html#trouble-installation"><span class="std std-ref">Installation problems</span></a> in the <a class="reference internal" href="../usage/troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a> section!
+If this still does not help open an <a class="reference external" href="https://github.com/textext/textext/issues/new/choose">issue on github</a>.
+However, please note the the TexText-maintainers do not have access to a MacOS system. So
+we need your direct cooperation to improve the installation instructions.</p>
+</div>
+</section>
+<section id="method-2-use-homebrew-inkscape">
+<h2>Method 2: Use Homebrew Inkscape<a class="headerlink" href="#method-2-use-homebrew-inkscape" title="Permalink to this headline"></a></h2>
+<section id="preparation">
+<h3>Preparation<a class="headerlink" href="#preparation" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><p>Install inkscape</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew install --cask inkscape
+</pre></div>
+</div>
+<p>Verify that inkscape launches and is of version &gt;= 1.x.</p>
+</li>
+</ol>
+</section>
+<section id="download-and-install-textext">
+<span id="macos-install-textext"></span><h3>Download and install <strong>TexText for Inkscape 1.x</strong><a class="headerlink" href="#download-and-install-textext" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><p>Download the most recent package from <a class="reference external" href="https://github.com/textext/textext/releases/tag/1.8.0-dev2#release">GitHub release page</a>
+(direct link: <a class="reference external" href="https://github.com/textext/textext/releases/download/1.8.0-dev2/TexText-MacOS-1.8.0-dev2.zip">.zip</a>)</p></li>
+<li><p>Extract the package and change into the created directory.</p></li>
+<li><p>Run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 setup.py --pdflatex-executable<span class="o">=</span><span class="k">$(</span>which pdflatex<span class="k">)</span> --skip-requirements-check
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python setup.py --pdflatex-executable<span class="o">=</span><span class="k">$(</span>which pdflatex<span class="k">)</span> --skip-requirements-check
+</pre></div>
+</div>
+<p>The script  will copy the required files into the user’s Inkscape
+configuration directory (usually this is <code class="docutils literal notranslate"><span class="pre">~/Library/Application</span> <span class="pre">Support/org.inkscape.Inkscape/config/inkscape/extensions</span></code>)</p>
+<p>If installation fails or TexText does not launch proceed with step 6 in method 1.</p>
+</li>
+</ol>
+<p>See <a class="reference internal" href="advanced.html#advanced-install"><span class="std std-ref">Advanced installation options</span></a> for further options provided by
+<code class="code highlight bash docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
+<p>Now you can consult the <a class="reference internal" href="../usage/gui.html#gui"><span class="std std-ref">usage instructions</span></a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="windows.html" class="btn btn-neutral float-left" title="TexText for Inkscape 1.x on Windows" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="advanced.html" class="btn btn-neutral float-right" title="Advanced installation options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, TexText developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
