@@ -229,6 +229,7 @@ class TexTextSvgEle(inkex.Group):
         root = doc.getroot()
 
         TexTextSvgEle._expand_defs(root)
+        TexTextSvgEle._remove_defs(root)
 
         shape_elements = [el for el in root if isinstance(el, (inkex.ShapeElement, inkex.Defs))]
         root.append(self)
@@ -270,6 +271,13 @@ class TexTextSvgEle(inkex.Group):
 
             # expand children defs
             TexTextSvgEle._expand_defs(ele)
+
+    @staticmethod
+    def _remove_defs(root: etree.ElementTree):
+        for ele in root:
+            if isinstance(ele, inkex.Defs):
+                parent = ele.getparent()
+                parent.remove(ele)
 
     def _make_ids_unique(self):
         """
