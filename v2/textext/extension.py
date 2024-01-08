@@ -196,8 +196,7 @@ class TexText(inkex.EffectExtension):
                         converter.stroke_to_path()
 
                     self.svg: inkex.SvgDocumentElement
-                    tt_node = TexTextSvgEle(converter.tmp("svg"), self.svg.unit)
-                    tt_node.set_meta_data(meta_data_new)
+                    tt_node = TexTextSvgEle(converter.tmp("svg"), meta_data_new, self.svg.unit)
 
             # Place new node in document
             if svg_ele_old is None:
@@ -255,7 +254,7 @@ class TexText(inkex.EffectExtension):
             # transforms in the layers, hence the inverse layer transformation
             tt_node.transform = (-full_layer_transform @  # map to view coordinate system
                                  inkex.Transform(translate=view_center) @  # place at view center
-                                 inkex.Transform(scale=meta_data_new.scale_factor) @  # scale
+                                 inkex.Transform(scale=meta_data_new.get_effective_scale()) @  # scale
                                  inkex.Transform(translate=-node_center) @  # place node at origin
                                  tt_node.transform  # use original node transform
                                  )
@@ -270,7 +269,7 @@ class TexText(inkex.EffectExtension):
                           old_node: TexTextSvgEle, meta_data_old: TexTextEleMetaData):
         with logger.debug("Replacing node in document"):
             # Rescale existing nodes according to user request
-            relative_scale = meta_data_new.scale_factor / meta_data_old.scale_factor
+            relative_scale = meta_data_new.get_effective_scale() / meta_data_old.get_effective_scale()
             new_node.align_to_node(old_node, meta_data_new.alignment, relative_scale)
 
             # If no non-black color has been explicitly set by TeX we copy the color information

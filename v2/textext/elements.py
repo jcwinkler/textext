@@ -39,6 +39,12 @@ class TexTextEleMetaData:
     textext_version: str = Defaults.TEXTEXT_VERSION  # Introduced in 0.7.1
     use_font_size: bool = False
 
+    def get_effective_scale(self):
+        if self.use_font_size:
+            return self.font_size_pt / 10.0
+        else:
+            return self.scale_factor
+
 
 class TexTextSvgEle(inkex.Group):
     """ A xml Group-element holding the rendered content.
@@ -80,7 +86,7 @@ class TexTextSvgEle(inkex.Group):
     KEY_INKSCAPE_VERSION = "inkscapeversion"
     KEY_INKEX_VERSION = "inkexversion"
 
-    def __init__(self, source_svg_filename: str, target_document_unit: str):
+    def __init__(self, source_svg_filename: str, meta_data: TexTextEleMetaData, target_document_unit: str):
         """
         :param source_svg_filename: The name of the file containing the svg-snippet
         :param target_document_unit: String specifying the unit of the document into
@@ -89,7 +95,9 @@ class TexTextSvgEle(inkex.Group):
                                      scaled later.
         """
         super().__init__()
+        self.transform = inkex.Transform()
         self._svg_to_textext_node(source_svg_filename, target_document_unit)
+        self.set_meta_data(meta_data)
 
     def set_meta_data(self, meta_data: TexTextEleMetaData):
         """ Writes the meta data as attributes into the svg node
