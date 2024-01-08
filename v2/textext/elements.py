@@ -26,17 +26,18 @@ class TexTextEleMetaData:
     Also holds the default values for several metadata keys.
     """
 
-    text: str = ""
-    tex_command: str = Defaults.TEXCMD
+    alignment: str = Defaults.ALIGNMENT
+    font_size_pt: float = Defaults.FONTSIZE_PT
+    inkex_version: str = Defaults.INKEX_VERSION  # Introduced in 2.0.0
+    inkscape_version: str = Defaults.INKSCAPE_VERSION
+    jacobian_sqrt: float = Defaults.JACOBIAN_SQRT
     preamble: str = Defaults.PREAMBLE
     scale_factor: float = Defaults.SCALE
-    font_size_pt: float = Defaults.FONTSIZE_PT
-    alignment: str = Defaults.ALIGNMENT
     stroke_to_path: bool = Defaults.STROKE_TO_PATH
-    jacobian_sqrt: float = Defaults.JACOBIAN_SQRT
+    tex_command: str = Defaults.TEXCMD
+    text: str = ""
     textext_version: str = Defaults.TEXTEXT_VERSION  # Introduced in 0.7.1
-    inkscape_version: str = Defaults.INKSCAPE_VERSION
-    inkex_version: str = Defaults.INKEX_VERSION  # Introduced in 2.0.0
+    use_font_size: bool = False
 
 
 class TexTextSvgEle(inkex.Group):
@@ -102,7 +103,10 @@ class TexTextSvgEle(inkex.Group):
         self.set_meta(self.KEY_PDFCONVERTER, "inkscape")
         self.set_meta_text(meta_data.text)
         self.set_meta(self.KEY_PREAMBLE, meta_data.preamble)
-        self.set_meta(self.KEY_SCALE, str(meta_data.scale_factor))
+        if meta_data.use_font_size:
+            self.set_meta(self.KEY_FONTSIZE_PT, str(meta_data.font_size_pt))
+        else:
+            self.set_meta(self.KEY_SCALE, str(meta_data.scale_factor))
         self.set_meta(self.KEY_ALIGNMENT, str(meta_data.alignment))
         self.set_meta(self.KEY_STROKE2PATH, str(int(meta_data.stroke_to_path)))
         self.set_meta(self.KEY_INKSCAPE_VERSION, str(meta_data.inkscape_version))
@@ -118,10 +122,20 @@ class TexTextSvgEle(inkex.Group):
         """
         meta_data = TexTextEleMetaData()
         meta_data.text = self.get_meta_text()
-        meta_data.preamble = self.get_meta(self.KEY_PREAMBLE)
-        meta_data.scale_factor = self.get_meta(self.KEY_SCALE,
+        meta_data.preamble = self.get_meta(self.KEY_PREAMBLE, data_type=str, default=Defaults.PREAMBLE)
+
+        # Either use font_size or scale factor for scaling
+        meta_data.font_size_pt = self.get_meta(self.KEY_FONTSIZE_PT,
                                                data_type=float,
-                                               default=Defaults.SCALE)
+                                               default=-1.0)  # -1.0 will indicate no font_size key available
+        if meta_data.font_size_pt == -1.0:
+            meta_data.scale_factor = self.get_meta(self.KEY_SCALE,
+                                                   data_type=float,
+                                                   default=Defaults.SCALE)
+            meta_data.use_font_size = False
+        else:
+            meta_data.use_font_size = True
+
         meta_data.alignment = self.get_meta(self.KEY_ALIGNMENT,
                                             data_type=str,
                                             default=Defaults.ALIGNMENT)
@@ -131,9 +145,6 @@ class TexTextSvgEle(inkex.Group):
         meta_data.stroke_to_path = bool(self.get_meta(self.KEY_STROKE2PATH,
                                                       data_type=int,
                                                       default=Defaults.STROKE_TO_PATH))
-        meta_data.font_size_pt = self.get_meta(self.KEY_FONTSIZE_PT,
-                                               data_type=int,
-                                               default=Defaults.FONTSIZE_PT)
         meta_data.jacobian_sqrt = self.get_meta(self.KEY_JACOBIAN_SQRT,
                                                 data_type=float,
                                                 default=Defaults.JACOBIAN_SQRT)
@@ -165,7 +176,7 @@ class TexTextSvgEle(inkex.Group):
 
         # Account for vertical flipping of nodes created via pstoedit in TexText <= 0.11.x
         revert_flip = inkex.Transform("scale(1)")
-        if ref_node.get_meta("pdfconverter", "pstoedit") == "pstoedit":
+        if ref_node.get_meta("pdfconverter", data_type=str, default="pstoedit") == "pstoedit":
             revert_flip = inkex.Transform(matrix=((1, 0, 0), (0, -1, 0)))  # vertical reflection
 
         composition = scale_transform * old_transform * revert_flip

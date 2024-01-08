@@ -83,13 +83,13 @@ class TexText(inkex.EffectExtension):
         self.arg_parser.add_argument(
             "--scale-factor",
             type=float,
-            default=Defaults.SCALE
+            default=Defaults.SCALE  # Has only effect if font-size-pt is not specified
         )
 
         self.arg_parser.add_argument(
             "--font-size-pt",
-            type=int,
-            default=Defaults.FONTSIZE_PT
+            type=float,
+            default=None  # None signals: Use scale-factor (given or default value)
         )
 
         # "top left", "middle center", "bottom right", etc.
@@ -119,16 +119,19 @@ class TexText(inkex.EffectExtension):
             svg_ele_old, meta_data_old = self.get_old()
 
             if self.options.text:  # Command line call
-                meta_data_new = TexTextEleMetaData(text="",
+                meta_data_new = TexTextEleMetaData(alignment=self.options.alignment,
+                                                   font_size_pt=self.options.font_size_pt if self.options.font_size_pt
+                                                   else Defaults.FONTSIZE_PT,
+                                                   inkex_version=inkex.__version__,
+                                                   inkscape_version=inkscape_version,
+                                                   jacobian_sqrt=Defaults.JACOBIAN_SQRT,
                                                    preamble=self._normalize_preamble_path(self.options.preamble_file),
                                                    scale_factor=self.options.scale_factor,
-                                                   tex_command=self.options.tex_command,
-                                                   alignment=self.options.alignment,
                                                    stroke_to_path=False,
-                                                   jacobian_sqrt=1.0,
+                                                   tex_command=self.options.tex_command,
                                                    textext_version=__version__,
-                                                   inkex_version=inkex.__version__,
-                                                   inkscape_version=inkscape_version)
+                                                   text="",
+                                                   use_font_size=self.options.font_size_pt is not None)
 
                 if self.options.text == "" and meta_data_old.text is not None:
                     # Recompile node with the settings passed in options
