@@ -90,7 +90,6 @@ class TexTextSvgEle(inkex.Group):
         """
         super().__init__()
         self._svg_to_textext_node(source_svg_filename, target_document_unit)
-        self.transform = inkex.Transform()
 
     def set_meta_data(self, meta_data: TexTextEleMetaData):
         """ Writes the meta data as attributes into the svg node
