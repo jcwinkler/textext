@@ -228,8 +228,8 @@ class TexTextSvgEle(inkex.Group):
 
         root = doc.getroot()
 
-        TexTextSvgEle._expand_defs(root)
-        TexTextSvgEle._remove_defs(root)
+        TexTextSvgEle.expand_defs(root)
+        TexTextSvgEle.remove_defs(root)
 
         shape_elements = [el for el in root if isinstance(el, (inkex.ShapeElement, inkex.Defs))]
         root.append(self)
@@ -245,7 +245,7 @@ class TexTextSvgEle(inkex.Group):
         self.transform.add_scale(root.uutounit(f"1{root.unit}", target_document_unit))
 
     @staticmethod
-    def _expand_defs(root: etree.ElementTree):
+    def expand_defs(root: etree.ElementTree):
         """ Replace all references to glyph definitions by the definitions itself in a given element
 
         :param root: The root element of the svg element. Its content is modified by this method.
@@ -270,10 +270,15 @@ class TexTextSvgEle(inkex.Group):
                 ele = group  # required for recursive defs
 
             # expand children defs
-            TexTextSvgEle._expand_defs(ele)
+            TexTextSvgEle.expand_defs(ele)
 
     @staticmethod
-    def _remove_defs(root: etree.ElementTree):
+    def remove_defs(root: etree.ElementTree):
+        """
+        Removes all defs from root
+
+        :param root: The root element of the svg element. Its content is modified by this method.
+        """
         for ele in root:
             if isinstance(ele, inkex.Defs):
                 parent = ele.getparent()
