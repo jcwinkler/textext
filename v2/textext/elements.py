@@ -420,7 +420,7 @@ class TexTextSvgEle(inkex.Group):
                     return True
         return False
 
-    def _import_group_color_style(self, src_svg_ele):
+    def import_group_color_style(self, src_svg_ele):
         """
         Extracts the color relevant style attributes of src_svg_ele (of class TexTextElement) and
         applies them to all items  of self. Ensures that non color relevant style
