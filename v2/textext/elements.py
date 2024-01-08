@@ -179,7 +179,7 @@ class TexTextSvgEle(inkex.Group):
         if ref_node.get_meta("pdfconverter", data_type=str, default="pstoedit") == "pstoedit":
             revert_flip = inkex.Transform(matrix=((1, 0, 0), (0, -1, 0)))  # vertical reflection
 
-        composition = scale_transform * old_transform * revert_flip
+        composition = scale_transform @ old_transform @ revert_flip
 
         # keep alignment point of drawing intact, calculate required shift
         self.transform = composition
@@ -195,7 +195,7 @@ class TexTextSvgEle(inkex.Group):
         d_x = p_old[0] - p_new[0]
         d_y = p_old[1] - p_new[1]
 
-        composition = inkex.Transform(translate=(d_x, d_y)) * composition
+        composition = inkex.Transform(translate=(d_x, d_y)) @ composition
 
         self.transform = composition
         self.set_meta(self.KEY_JACOBIAN_SQRT, str(self.get_jacobian_sqrt()))
