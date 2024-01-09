@@ -189,7 +189,7 @@ class TexText(inkex.EffectExtension):
 
                     converter = TexToPdfConverter(latex_exe=self.config.get_executable(meta_data_new.tex_command),
                                                   inkscape_exe=self.config.get_executable("inkscape"))
-                    converter.tex_to_pdf(meta_data_new.text, meta_data_new.preamble)
+                    converter.tex_to_pdf(meta_data_new.text, meta_data_new.preamble, meta_data_new.use_font_size)
                     converter.pdf_to_svg()
 
                     if meta_data_new.stroke_to_path:

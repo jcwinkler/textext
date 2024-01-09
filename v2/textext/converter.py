@@ -10,6 +10,7 @@ for full license details.
 """
 import os
 import platform
+import re
 import subprocess
 from typing import List
 from utils.errors import TexTextCommandNotFound, TexTextCommandFailed, TexTextConversionError
@@ -28,7 +29,7 @@ class TexToPdfConverter:
 
     """
 
-    DEFAULT_DOCUMENT_CLASS = r"\documentclass{article}"
+    DEFAULT_DOCUMENT_CLASS = r"\documentclass[10pt]{article}"
     DOCUMENT_TEMPLATE = r"""
     {0}
     \pagestyle{{empty}}
@@ -51,30 +52,21 @@ class TexToPdfConverter:
         self._inkscape_exe = inkscape_exe
         self._latex_exe = latex_exe
 
-    def tex_to_pdf(self, latex_text: str, preamble_file: str):
+    def tex_to_pdf(self, latex_text: str, preamble_file: str, force_default_documentclass: bool):
         """ Create a PDF file from latex text.
 
         :param latex_text: The text to be compiled
         :param preamble_file: Full path to preamble file. If the preamble file does not exist
                               DEFAULT_DOCUMENT_CLASS is inserted before latex_text.
+        :param force_default_documentclass: If true, any user defined \\documentclass or
+               \\documentstyle specifications are removed from the preamble and replaced by the
+               default document class
 
         :raises: TexTextConversionError
         """
         with logger.debug("Converting .tex to .pdf"):
             # Read preamble
-            preamble = ""
-            if os.path.isfile(preamble_file):
-                with open(preamble_file, 'r', encoding="utf-8") as f_handle:
-                    logger.debug(f"Reading preamble file {preamble_file}")
-                    preamble += f_handle.read()
-            else:
-                logger.debug(f"Preamble file {preamble_file} not found.")
-
-            # Add default document class to preamble if there is no one
-            # (by purpose or if preamble_file does not exist)
-            if not self._contains_document_class(preamble):
-                logger.debug("Using default document class.")
-                preamble = self.DEFAULT_DOCUMENT_CLASS + preamble
+            preamble = self._get_preamble(preamble_file, force_default_documentclass)
 
             # Options pass to LaTeX-related commands
             texwrapper = self.DOCUMENT_TEMPLATE.format(preamble, latex_text)
@@ -178,6 +170,46 @@ class TexToPdfConverter:
         :return: str
         """
         return self.tmp_base + '.' + ext
+
+    def _get_preamble(self, preamble_file: str, force_default_documentclass: bool) -> str:
+        """ Sets up the preamble string.
+
+        The method tries to load the specified preamble file. If this fails a default preamble
+        is used.
+
+        :param preamble_file: The file from which the preamble is loaded
+        :param force_default_documentclass: If true any \\documentclass or \\documentstyle commands
+               are removed from the loaded preamble file and replaced by the default document class.
+
+        :returns: The valid preamble
+        """
+        preamble = ""
+
+        if os.path.isfile(preamble_file):
+            with open(preamble_file, 'r', encoding="utf-8") as f_handle:
+                logger.debug(f"Reading preamble file {preamble_file}")
+                preamble += f_handle.read()
+        else:
+            logger.debug(f"Preamble file {preamble_file} not found.")
+
+        if force_default_documentclass:
+            # Remove user defined documentclass so that default class can be added
+            # in the next step.
+            logger.debug("Removing document class.")
+            preamble = self._remove_documentclass(preamble)
+
+        if not self._contains_document_class(preamble):
+            logger.debug("Using default document class.")
+            preamble = self.DEFAULT_DOCUMENT_CLASS + preamble
+
+        return preamble
+
+    @staticmethod
+    def _remove_documentclass(preamble: str) -> str:
+        rex = re.compile(r"((\\documentclass|\\documentstyle)\n?[{\[]((.)*?)})", re.DOTALL)
+        matches = re.findall(rex, preamble)
+        if len(matches) > 0:
+            return preamble.replace(matches[0][0], "")
 
     @staticmethod
     def _contains_document_class(preamble: str):
