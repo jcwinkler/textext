@@ -208,6 +208,7 @@ class TexText(inkex.EffectExtension):
                 self.config.preamble_file = meta_data_new.preamble
                 self.config.scale_factor = meta_data_new.scale_factor
                 self.config.font_size_pt = meta_data_new.font_size_pt
+                self.config.use_font_size_scaling = meta_data_new.use_font_size
                 self.config.previous_command = meta_data_new.tex_command
                 self.config.save()
 

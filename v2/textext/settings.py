@@ -58,6 +58,7 @@ class Defaults:
     TEXTEXT_VERSION = "<=0.7"
     GUI_NEW_NODE_CONTENT = GuiOptions.NEW_NODE_EMPTY
     GUI_CLOSE_SHORTCUT = GuiOptions.CLOSE_CTRLQ
+    USE_FONT_SIZE_SCALING = False
 
 
 class SettingsError(OSError):
@@ -193,6 +194,14 @@ class SettingsTexText(SettingsBase):
     @previous_command.setter
     def previous_command(self, command: str):
         self._data["previous_tex_command"] = command
+
+    @property
+    def use_font_size_scaling(self) -> bool:
+        return self._data.get("use_font_size_scaling", Defaults.USE_FONT_SIZE_SCALING)
+
+    @use_font_size_scaling.setter
+    def use_font_size_scaling(self, value: bool):
+        self._data["use_font_size_scaling"] = value
 
     @property
     def gui_auto_indent(self) -> bool:
