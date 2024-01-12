@@ -299,7 +299,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="mit_whitepreviewbg">
+                      <object class="GtkCheckMenuItem" id="mit_whitepreviewbg">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">White preview background</property>

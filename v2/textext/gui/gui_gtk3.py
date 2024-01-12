@@ -11,7 +11,7 @@ for full license details.
 from abc import ABCMeta, abstractmethod
 from typing import Union
 from textext.elements import TexTextEleMetaData
-from textext.settings import SettingsTexText
+from textext.settings import SettingsTexText, Align
 from textext.utils.environment import Cmds
 import gi
 gi.require_version("Gtk", "3.0")
@@ -77,15 +77,53 @@ class TexTextGuiGTK3(TexTextGuiBase):
         self.buffer_code: Gtk.TextBuffer = self.builder.get_object("tbf_texcode")
         self.buffer_preamble: Gtk.TextBuffer = self.builder.get_object("tbf_preamble")
 
-        self.buffer_code.set_text(self.meta_data.text)
-        self.load_preamble_file(self.meta_data.preamble)
-        self.set_monospace_font(self.config.gui_font_size)
-
+        # Command box
         widget = self.builder.get_object("cmb_cmd")
         widget.remove_all()
         for cmd in Cmds.ALL_TEX_COMMANDS:
             widget.append_text(cmd)
         widget.set_active(Cmds.ALL_TEX_COMMANDS.index(self.meta_data.tex_command))
+
+        # Alignment box
+        widget = self.builder.get_object("cmb_align")
+        widget.set_active(Align.LABELS.index(self.meta_data.alignment))
+
+        # Sizing box
+        if self.meta_data.use_font_size:
+            self.builder.get_object("rb_scale").set_active(True)
+            self.builder.get_object("adj_scale").set_value(self.meta_data.scale_factor)
+
+            self.builder.get_object("sbn_scale").set_sensitive(True)
+            self.builder.get_object("btn_scale_reset").set_sensitive(True)
+            self.builder.get_object("btn_scale_previous").set_sensitive(True)
+
+            self.builder.get_object("sbn_fontsize").set_sensitive(False)
+            self.builder.get_object("btn_fontsize_reset").set_sensitive(False)
+            self.builder.get_object("btn_fontsize_previous").set_sensitive(False)
+        else:
+            self.builder.get_object("rb_fontsize").set_active(True)
+            self.builder.get_object("adj_fontsize").set_value(self.meta_data.font_size_pt)
+
+            self.builder.get_object("sbn_fontsize").set_sensitive(True)
+            self.builder.get_object("btn_fontsize_reset").set_sensitive(True)
+            self.builder.get_object("btn_fontsize_previous").set_sensitive(True)
+
+            self.builder.get_object("sbn_scale").set_sensitive(False)
+            self.builder.get_object("btn_scale_reset").set_sensitive(False)
+            self.builder.get_object("btn_scale_previous").set_sensitive(False)
+
+        # Code window & Preamble file
+        self.buffer_code.set_text(self.meta_data.text)
+        self.load_preamble_file(self.meta_data.preamble)
+        self.set_monospace_font(self.config.gui_font_size)
+
+        # View menu
+        self.builder.get_object("mit_wordwrap").set_active(self.config.gui_word_wrap)
+        self.builder.get_object("mit_linenumbers").set_active(self.config.gui_line_numbers)
+        self.builder.get_object("mit_spaces").set_active(self.config.gui_insert_spaces)
+        self.builder.get_object("mit_autoindent").set_active(self.config.gui_auto_indent)
+        self.builder.get_object("mit_whitepreviewbg").set_active(self.config.gui_auto_indent)
+
         self.window.show()
         Gtk.main()
 
