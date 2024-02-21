@@ -284,7 +284,10 @@ class SettingsTexText(SettingsBase):
         self._data["gui"]["word_wrap"] = value
 
     def get_executable(self, command: str) -> str:
-        return self._data.get(f"{command}-executable", system_env.executable_names[command][0])
+        try:
+            return self._data.get(f"{command}-executable", system_env.executable_names[command][0])
+        except KeyError:
+            return ""
 
     def set_executable(self, command: str, exe: str):
         self._data[f"{command}-executable"] = exe

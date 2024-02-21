@@ -35,8 +35,8 @@ class TexTextGuiBase:
         self.global_pdf_font_size = config.font_size_pt
         self.config = config
 
-        if node_meta_data.tex_command not in Cmds.ALL_TEX_COMMANDS:
-            node_meta_data.tex_command = Cmds.ALL_TEX_COMMANDS[0]
+        if node_meta_data.tex_command not in Cmds.ALL_TEX:
+            node_meta_data.tex_command = Cmds.PDFLATEX
 
         self.svg_build_func = svg_build_func
         self.png_build_func = png_build_func
@@ -80,9 +80,9 @@ class TexTextGuiGTK3(TexTextGuiBase):
         # Command box
         widget = self.builder.get_object("cmb_cmd")
         widget.remove_all()
-        for cmd in Cmds.ALL_TEX_COMMANDS:
+        for cmd in Cmds.ALL_TEX:
             widget.append_text(cmd)
-        widget.set_active(Cmds.ALL_TEX_COMMANDS.index(self.meta_data.tex_command))
+        widget.set_active(Cmds.ALL_TEX.index(self.meta_data.tex_command))
 
         # Alignment box
         widget = self.builder.get_object("cmb_align")

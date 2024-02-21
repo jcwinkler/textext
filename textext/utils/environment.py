@@ -27,12 +27,16 @@ import sys
 
 @dataclass(frozen=True)
 class Cmds:
+    DVISVGM = "dvisvgm"
     INKSCAPE = "inkscape"
     LUALATEX = "lualatex"
+    PDF2SVG = "pdf2svg"
     PDFLATEX = "pdflatex"
     TYPST = "typst"
     XELATEX = "xelatex"
-    ALL_TEX_COMMANDS = [PDFLATEX, XELATEX, LUALATEX, TYPST]
+    ALL_TEX = [PDFLATEX, XELATEX, LUALATEX, TYPST]
+    ALL_PDF = [INKSCAPE, DVISVGM, PDF2SVG]
+    ALL = ALL_TEX + ALL_PDF
 
 
 class AbstractEnvironment:
@@ -96,12 +100,13 @@ class AbstractEnvironment:
 class LinuxEnvironment(AbstractEnvironment):
     os_name = "linux"
     console_colors = "always"
-    executable_names = {Cmds.INKSCAPE: ["inkscape"],
-                        Cmds.PDFLATEX: ["pdflatex"],
-                        Cmds.XELATEX: ["xelatex"],
+    executable_names = {Cmds.DVISVGM: ["dvisvgm"],
+                        Cmds.INKSCAPE: ["inkscape"],
                         Cmds.LUALATEX: ["lualatex"],
-                        Cmds.TYPST: ["typst"]
-                        }
+                        Cmds.PDF2SVG: ["pdf2svg"],
+                        Cmds.PDFLATEX: ["pdflatex"],
+                        Cmds.TYPST: ["typst"],
+                        Cmds.XELATEX: ["xelatex"]}
 
     @property
     def inkscape_user_extensions_path(self) -> str:
@@ -131,12 +136,13 @@ class LinuxEnvironment(AbstractEnvironment):
 class MacEnvironment(LinuxEnvironment):
     os_name = "macos"
     console_colors = "always"
-    executable_names = {Cmds.INKSCAPE: ["inkscape", "inkscape-bin"],
-                        Cmds.PDFLATEX: ["pdflatex"],
-                        Cmds.XELATEX: ["xelatex"],
+    executable_names = {Cmds.DVISVGM: ["dvisvgm"],
+                        Cmds.INKSCAPE: ["inkscape", "inkscape-bin"],
                         Cmds.LUALATEX: ["lualatex"],
-                        Cmds.TYPST: ["typst"]
-                        }
+                        Cmds.PDF2SVG: ["pdf2svg"],
+                        Cmds.PDFLATEX: ["pdflatex"],
+                        Cmds.TYPST: ["typst"],
+                        Cmds.XELATEX: ["xelatex"]}
 
     @property
     def system_path(self) -> List[str]:
@@ -161,12 +167,13 @@ class WindowsEnvironment(AbstractEnvironment):
 
     os_name = "windows"
     console_colors = "never"
-    executable_names = {Cmds.INKSCAPE: ["inkscape.exe"],
-                        Cmds.PDFLATEX: ["pdflatex.exe"],
-                        Cmds.XELATEX: ["xelatex.exe"],
-                        Cmds.LUALATEX: ["lualatex.exe"],
-                        Cmds.TYPST: ["typst.exe"]
-                        }
+    executable_names = {Cmds.DVISVGM: ["dvisvgm"],
+                        Cmds.INKSCAPE: ["inkscape"],
+                        Cmds.LUALATEX: ["lualatex"],
+                        Cmds.PDF2SVG: ["pdf2svg"],
+                        Cmds.PDFLATEX: ["pdflatex"],
+                        Cmds.TYPST: ["typst"],
+                        Cmds.XELATEX: ["xelatex"]}
 
     def __init__(self):
         super().__init__()
