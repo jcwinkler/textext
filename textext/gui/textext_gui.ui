@@ -211,6 +211,33 @@
                                 <property name="draw-as-radio">True</property>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_20pt">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">20pt</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_24pt">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">24pt</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_30pt">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">30pt</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -219,24 +246,30 @@
                       <object class="GtkCheckMenuItem" id="mit_wordwrap">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Wrap long lines in editor to avoid horizontal scrolling</property>
                         <property name="label" translatable="yes">Word wrap</property>
                         <property name="use-underline">True</property>
+                        <signal name="toggled" handler="on_mit_wordwrap_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="mit_linenumbers">
+                      <object class="GtkCheckMenuItem" id="mit_line_numbers">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Toggle visibility of line numbers left to the text editor</property>
                         <property name="label" translatable="yes">Show line numbers</property>
                         <property name="use-underline">True</property>
+                        <signal name="toggled" handler="on_mit_line_numbers_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="mit_spaces">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Whether to insert space characters when inserting tabulations</property>
                         <property name="label" translatable="yes">Insert spaces instead of Tabs</property>
                         <property name="use-underline">True</property>
+                        <signal name="toggled" handler="on_mit_spaces_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -253,6 +286,7 @@
                               <object class="GtkRadioMenuItem" id="mit_tabw2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Set tabulation width to 2 spaces</property>
                                 <property name="label" translatable="yes">2</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -262,6 +296,7 @@
                               <object class="GtkRadioMenuItem" id="mit_tabw4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Set tabulation width to 4 spaces</property>
                                 <property name="label" translatable="yes">4</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -271,6 +306,7 @@
                               <object class="GtkRadioMenuItem" id="mit_tabw6">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Set tabulation width to 6 spaces</property>
                                 <property name="label" translatable="yes">6</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -280,6 +316,7 @@
                               <object class="GtkRadioMenuItem" id="mit_tabw8">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Set tabulation width to 8 spaces</property>
                                 <property name="label" translatable="yes">8</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -289,6 +326,7 @@
                               <object class="GtkRadioMenuItem" id="mit_tabw10">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Set tabulation width to 10 spaces</property>
                                 <property name="label" translatable="yes">10</property>
                                 <property name="use-underline">True</property>
                                 <property name="draw-as-radio">True</property>
@@ -299,17 +337,20 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="mit_whitepreviewbg">
+                      <object class="GtkCheckMenuItem" id="mit_white_preview_bg">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Set preview background to white</property>
                         <property name="label" translatable="yes">White preview background</property>
                         <property name="use-underline">True</property>
+                        <signal name="toggled" handler="on_mit_white_preview_bg_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="mit_autoindent">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Toggle automatic auto indentation of text</property>
                         <property name="label" translatable="yes">Enable auto indent</property>
                         <property name="use-underline">True</property>
                       </object>
@@ -334,6 +375,7 @@
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Executable paths...</property>
                         <property name="use-underline">True</property>
+                        <signal name="activate" handler="on_mit_exepaths_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -342,14 +384,95 @@
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">New node content</property>
                         <property name="use-underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_new_node_empty">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">New node will be initialized with empty content</property>
+                                <property name="label" translatable="yes">Empty</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_new_node_inline_math">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">New node will be initialized with $ $</property>
+                                <property name="label" translatable="yes">Inline math</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_new_node_display_math">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">New node will be initialized with $$ $$</property>
+                                <property name="label" translatable="yes">Display math</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="mit_confirmclose">
+                      <object class="GtkCheckMenuItem" id="mit_confirm_close">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Request confirmation for closing the window when text has been changed</property>
                         <property name="label" translatable="yes">Confirm close of TexText</property>
                         <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="mit_close_shortcut">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">The shortcut that can be used to close the TexText window</property>
+                        <property name="label" translatable="yes">Close TexText Shortcut</property>
+                        <property name="use-underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_close_shortcut_escape">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">TexText window closes when pressing ESC</property>
+                                <property name="label" translatable="yes">ESC</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_close_shortcut_ctrlq">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">CTRL + Q</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="mit_close_shortcut_none">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">No shortcut for closing TexText window</property>
+                                <property name="label" translatable="yes">None</property>
+                                <property name="use-underline">True</property>
+                                <property name="draw-as-radio">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

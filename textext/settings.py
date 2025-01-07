@@ -15,6 +15,7 @@ from dataclasses import dataclass
 import json
 import os
 from utils.environment import Cmds, system_env
+from utils.log_util import logger
 
 
 @dataclass(frozen=True)
@@ -32,16 +33,16 @@ class Align:
 
 @dataclass(frozen=True)
 class GuiOptions:
-    NEW_NODE_DISPLAY_MATH = "DisplayMath"
-    NEW_NODE_EMPTY = "Empty"
-    NEW_NODE_INLINE_MATH = "InlineMath"
+    # This must be aligned with the widget names in glade (e.g. mit_new_node_empty)!
+    NEW_NODE_DISPLAY_MATH = "display_math"
+    NEW_NODE_EMPTY = "empty"
+    NEW_NODE_INLINE_MATH = "inline_math"
     NEW_NODE_CONTENT = [NEW_NODE_EMPTY, NEW_NODE_INLINE_MATH, NEW_NODE_DISPLAY_MATH]
 
-    CLOSE_CTRLQ = "CtrlQ"
-    CLOSE_ESCAPE = "Escape"
-    CLOSE_NONE = "None"
+    CLOSE_CTRLQ = "ctrlq"
+    CLOSE_ESCAPE = "escape"
+    CLOSE_NONE = "none"
     CLOSE_SHORTCUT = [CLOSE_ESCAPE, CLOSE_CTRLQ, CLOSE_NONE]
-    CLOSE_SHORTCUT_TEXT = ["_ESC", "CTRL + _Q", "None"]
 
 
 @dataclass(frozen=True)
@@ -277,19 +278,26 @@ class SettingsTexText(SettingsBase):
         
     @property
     def gui_word_wrap(self) -> bool:
-        return self._data["gui"].get("word_wrap", False)
+        return self._data["gui"].get("word_wrap", True)
 
     @gui_word_wrap.setter
     def gui_word_wrap(self, value: bool):
         self._data["gui"]["word_wrap"] = value
 
     def get_executable(self, command: str) -> str:
+        """
+        Returns the path to the executable associated with a command. If no path is
+        stored in the settngs the system default path is returned. If no such path is
+        defined an empty string is returned.
+        """
         try:
-            return self._data.get(f"{command}-executable", system_env.executable_names[command][0])
+            exe_name = self._data.get(f"{command}-executable", system_env.executable_names[command][0])
+            return exe_name if exe_name is not None else ""
         except KeyError:
             return ""
 
     def set_executable(self, command: str, exe: str):
+        logger.info(f"Setting executable path for command '{command}' to `{exe}'.")
         self._data[f"{command}-executable"] = exe
 
 

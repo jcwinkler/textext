@@ -18,7 +18,7 @@ with the correct class.
 """
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 import ctypes as ct
 import os
 import subprocess as sp
@@ -108,6 +108,14 @@ class LinuxEnvironment(AbstractEnvironment):
                         Cmds.TYPST: ["typst"],
                         Cmds.XELATEX: ["xelatex"]}
 
+    executable_check_strings = {Cmds.DVISVGM: ["dvisvgm"],
+                                Cmds.INKSCAPE: ["Inkscape"],
+                                Cmds.LUALATEX: ["LuaHBTeX"],
+                                Cmds.PDF2SVG: ["pdf2svg"],
+                                Cmds.PDFLATEX: ["pdfTeX"],
+                                Cmds.TYPST: ["typst"],
+                                Cmds.XELATEX: ["XeTeX"]}
+
     @property
     def inkscape_user_extensions_path(self) -> str:
         return os.path.expanduser("~/.config/inkscape/extensions")
@@ -125,12 +133,12 @@ class LinuxEnvironment(AbstractEnvironment):
         return os.environ["PATH"].split(os.path.pathsep)
 
     @staticmethod
-    def call_command(command, return_code=0):
+    def call_command(command, return_code=0) -> Tuple[str, str]:
         with sp.Popen(command, stdout=sp.PIPE, stderr=sp.PIPE) as proc:
             stdout, stderr = proc.communicate()
         if return_code is not None and proc.returncode != return_code:
             raise sp.CalledProcessError(proc.returncode, command)
-        return stdout, stderr
+        return stdout.decode(sys.stdout.encoding), stderr.decode(sys.stderr.encoding)
 
 
 class MacEnvironment(LinuxEnvironment):
@@ -143,6 +151,15 @@ class MacEnvironment(LinuxEnvironment):
                         Cmds.PDFLATEX: ["pdflatex"],
                         Cmds.TYPST: ["typst"],
                         Cmds.XELATEX: ["xelatex"]}
+
+    executable_check_strings = {Cmds.DVISVGM: ["dvisvgm"],
+                                Cmds.INKSCAPE: ["Inkscape"],
+                                Cmds.LUALATEX: ["LuaHBTeX"],
+                                Cmds.PDF2SVG: ["pdf2svg"],
+                                Cmds.PDFLATEX: ["pdfTeX"],
+                                Cmds.TYPST: ["typst"],
+                                Cmds.XELATEX: ["XeTeX"]}
+
 
     @property
     def system_path(self) -> List[str]:
@@ -174,6 +191,14 @@ class WindowsEnvironment(AbstractEnvironment):
                         Cmds.PDFLATEX: ["pdflatex"],
                         Cmds.TYPST: ["typst"],
                         Cmds.XELATEX: ["xelatex"]}
+
+    executable_check_strings = {Cmds.DVISVGM: ["dvisvgm"],
+                                Cmds.INKSCAPE: ["Inkscape"],
+                                Cmds.LUALATEX: ["LuaHBTeX"],
+                                Cmds.PDF2SVG: ["pdf2svg"],
+                                Cmds.PDFLATEX: ["pdfTeX"],
+                                Cmds.TYPST: ["typst"],
+                                Cmds.XELATEX: ["XeTeX"]}
 
     def __init__(self):
         super().__init__()
@@ -216,7 +241,7 @@ class WindowsEnvironment(AbstractEnvironment):
         return os.environ["PATH"].split(os.path.pathsep)
 
     @staticmethod
-    def call_command(command, return_code=0):
+    def call_command(command, return_code=0) -> Tuple[str, str]:
         """
         Safely execute a system command.
 
@@ -235,7 +260,7 @@ class WindowsEnvironment(AbstractEnvironment):
             stdout, stderr = proc.communicate()
         if return_code is not None and proc.returncode != return_code:
             raise sp.CalledProcessError(proc.returncode, command)
-        return stdout, stderr
+        return stdout.decode(sys.stdout.encoding), stderr.decode(sys.stderr.encoding)
 
 
 if sys.platform.startswith("win"):

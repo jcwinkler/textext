@@ -9,13 +9,181 @@ file LICENSE.txt or go to https://github.com/textext/textext
 for full license details.
 """
 from abc import ABCMeta, abstractmethod
-from typing import Union
+import shutil
+from typing import Dict, List, Union
+import os
+import subprocess as sp
 from textext.elements import TexTextEleMetaData
 from textext.settings import SettingsTexText, Align
-from textext.utils.environment import Cmds
+from textext.utils.environment import Cmds, system_env
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk  # noqa
+from gi.repository import Gtk, Gdk, Gio  # noqa
+
+
+class DlgExePaths:
+    def __init__(self, exe_paths: Dict[str, str]):
+        self.modified_exe_paths: Dict[str, str] = {}
+        """Dictionary holding the modified executable paths when dialog closes. Keys are the commands."""
+
+        self.exe_paths: Dict[str, str] = exe_paths
+        self.builder: Gtk.Builder = Gtk.Builder()
+        self.builder.add_from_file("gui/executable_dlg.ui")
+        self.builder.connect_signals(self)
+        self.dialog = self.builder.get_object("dlg_exe_paths")
+
+        for command, exe_path in exe_paths.items():
+            try:
+                self.builder.get_object(f"ed_{command}").set_text(exe_path)
+            except AttributeError as err:
+                # ToDo -> Log message!
+                print(f"Failed to set exe path for command {command}")
+
+        self.builder.get_object("cbx_check_executables").set_active(True)
+
+    def show(self) -> bool:
+        """ Shows the dialog.
+
+        :return: True, if OK has been pressed AND something has been changed,
+                 otherwise False
+        """
+        result = self.dialog.run()
+        return len(self.modified_exe_paths) > 0
+
+    def on_dlg_exe_paths_delete_event(self, dialog: Gtk.Dialog, event: Gdk.Event):
+        self.dialog.hide()
+
+    def on_btn_ok_clicked(self, button: Gtk.Button):
+        """ Iterates through all text entries and checks if their content has been changed in a valid way.
+
+        :param button: The OK Button pressed
+        """
+        for command in self.exe_paths.keys():
+            new_exe_path = self.builder.get_object(f"ed_{command}").get_text()
+            if self.exe_paths[command] != new_exe_path:
+                if not self.check_executable(command, new_exe_path, system_env.executable_check_strings[command]):
+                    return
+                else:
+                    self.modified_exe_paths[command] = new_exe_path
+        self.dialog.hide()
+
+    def on_btn_cancel_clicked(self, button: Gtk.Button):
+        self.modified_exe_paths.clear()
+        self.on_dlg_exe_paths_delete_event(self.dialog, Gdk.EventType.DELETE)
+
+    def on_btn_pdflatex_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.PDFLATEX)
+
+    def on_btn_xelatex_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.XELATEX)
+
+    def on_btn_lualatex_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.LUALATEX)
+
+    def on_btn_typst_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.TYPST)
+
+    def on_btn_inkscape_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.INKSCAPE)
+
+    def on_btn_dvisvgm_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.DVISVGM)
+
+    def on_btn_pdf2svg_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.PDF2SVG)
+
+    def on_rb_pdf2svg_inkscape_toggled(self, button: Gtk.RadioButton):
+        pass
+
+    def on_rb_pdf2svg_dvisvgm_toggled(self, button: Gtk.RadioButton):
+        pass
+
+    def on_rb_pdf2svg_pdf2svg_toggled(self, button: Gtk.RadioButton):
+        pass
+
+    def check_executable(self, command: str, exe_path: str, check_strings: List[str]) -> bool:
+        """ Checks if an executable assigned to a command exists and is valid.
+
+        :param command: The command (see :class:Cmds
+        :param exe_path: The full path to the executable
+        :param check_strings: Strings which are expected to be in the output of ``exe_path --version``
+        :return: True if the check is successful, otherwise False. An error message is shown in
+                 that case.
+        """
+        result = False
+        if shutil.which(exe_path):
+            if self.builder.get_object("cbx_check_executables").get_active():
+                try:
+                    sout, _ = system_env.call_command([exe_path, "--version"])
+                    for cs in check_strings:
+                        if cs in sout:
+                            result = True
+                            break
+                except sp.CalledProcessError:
+                    pass
+            else:
+                # File exists
+                result = True
+
+        if not result:
+            dlg = Gtk.MessageDialog(transient_for=self.dialog,
+                                    flags=0,
+                                    message_type=Gtk.MessageType.WARNING,
+                                    buttons=Gtk.ButtonsType.YES_NO,
+                                    text=f"The specified executable '{exe_path}' for the command '{command}' "
+                                         f"is not a valid executable or the command '{exe_path} --version' does not "
+                                         f"return a string containing one of the substrings'{check_strings}'! "
+                                         f"Continue anyway?"
+                                    )
+            dlg_result = dlg.run()
+            result = dlg_result == Gtk.ResponseType.YES
+            dlg.destroy()
+
+        return result
+
+    def select_executable(self, command: str):
+        """ Opens a dialog to select an executable for a given command
+
+        If the executable path has changed the entry is changed accordingly
+
+        :param command: The command string identifying the widget: ed_command
+        """
+        entry: Gtk.Entry = self.builder.get_object(f"ed_{command}")
+        old_exe_path = entry.get_text()
+        new_exe_path = self.select_file(old_exe_path)
+        if new_exe_path != old_exe_path:
+            entry.set_text(new_exe_path)
+
+    def select_file(self, file_path: str) -> str:
+        """
+        
+        :param file_path:
+        :return:
+        """
+        dlg = Gtk.FileChooserDialog(title="Select executable...",
+                                    transient_for=self.dialog,
+                                    action=Gtk.FileChooserAction.OPEN)
+        dlg.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        if os.path.isfile(file_path):
+            dlg.set_file(Gio.File.new_for_path(file_path))
+        else:
+            dlg.set_file(Gio.File.new_for_path("/"))
+
+        # ToDo: Implement correct filtering for applications
+        # exe_filter = Gtk.FileFilter()
+        # exe_filter.set_name("Executables")
+        # exe_filter.add_mime_type("application/x-binary")
+        # exe_filter.add_pattern("*")
+        # dlg.set_filter(exe_filter)
+
+        response = dlg.run()
+        new_filepath = file_path
+        if response == Gtk.ResponseType.OK:
+            new_filepath = dlg.get_filename()
+
+        dlg.destroy()
+
+        return new_filepath
 
 
 class TexTextGuiBase:
@@ -68,14 +236,16 @@ class TexTextGuiGTK3(TexTextGuiBase):
     def __init__(self, version_str,  node_meta_data, config, svg_build_func, png_build_func=None):
         super().__init__(version_str,  node_meta_data, config, svg_build_func, png_build_func)
         self.builder: Gtk.Builder = Gtk.Builder()
-
-    def show(self):
         self.builder.add_from_file("gui/textext_gui.ui")
         self.builder.connect_signals(self)
 
         self.window: Gtk.Window = self.builder.get_object("textext_gui")
         self.buffer_code: Gtk.TextBuffer = self.builder.get_object("tbf_texcode")
+        self.textview_code: Gtk.TextView = self.builder.get_object("tev_texcode")
         self.buffer_preamble: Gtk.TextBuffer = self.builder.get_object("tbf_preamble")
+        self.textview_preamble: Gtk.TextView = self.builder.get_object("tev_preamble")
+
+    def show(self):
 
         # Command box
         widget = self.builder.get_object("cmb_cmd")
@@ -119,10 +289,28 @@ class TexTextGuiGTK3(TexTextGuiBase):
 
         # View menu
         self.builder.get_object("mit_wordwrap").set_active(self.config.gui_word_wrap)
-        self.builder.get_object("mit_linenumbers").set_active(self.config.gui_line_numbers)
+        self.builder.get_object("mit_line_numbers").set_active(self.config.gui_line_numbers)
         self.builder.get_object("mit_spaces").set_active(self.config.gui_insert_spaces)
         self.builder.get_object("mit_autoindent").set_active(self.config.gui_auto_indent)
-        self.builder.get_object("mit_whitepreviewbg").set_active(self.config.gui_auto_indent)
+        self.builder.get_object("mit_white_preview_bg").set_active(self.config.gui_preview_white_bg)
+        widget = self.builder.get_object(f"mit_{self.config.gui_font_size}pt")
+        if widget:
+            widget.set_active(True)
+
+        widget = self.builder.get_object(f"mit_tabw{self.config.gui_tab_width}")
+        if widget:
+            widget.set_active(True)
+
+        # Settings menus
+        widget = self.builder.get_object(f"mit_new_node_{self.config.gui_new_node_content}")
+        if widget:
+            widget.set_active(True)
+
+        self.builder.get_object(f"mit_confirm_close").set_active(self.config.gui_confirm_close)
+
+        widget = self.builder.get_object(f"mit_close_shortcut_{self.config.gui_close_shortcut}")
+        if widget:
+            widget.set_active(True)
 
         self.window.show()
         Gtk.main()
@@ -256,32 +444,57 @@ class TexTextGuiGTK3(TexTextGuiBase):
     def on_win_main_destroy(widget):
         Gtk.main_quit()
 
-    def on_btn_execute_clicked(self, btn_execute):
+    def on_btn_execute_clicked(self, btn_execute: Gtk.Button):
         pass
 
-    def on_btn_preview_clicked(self, btn_preview):
+    def on_btn_preview_clicked(self, btn_preview: Gtk.Button):
         pass
 
-    def on_btn_cancel_clicked(self, btn_cancel):
+    def on_btn_cancel_clicked(self, btn_cancel: Gtk.Button):
         self.on_win_main_destroy(btn_cancel)
 
-    def on_btn_scale_reset_clicked(self, btn_scale_reset):
+    def on_btn_scale_reset_clicked(self, btn_scale_reset: Gtk.Button):
         pass
 
-    def on_btn_scale_previous_clicked(self, btn_scale_previous):
+    def on_btn_scale_previous_clicked(self, btn_scale_previous: Gtk.Button):
         pass
 
-    def on_btn_fontsize_reset_clicked(self, btn_fontsize_reset):
+    def on_btn_fontsize_reset_clicked(self, btn_fontsize_reset: Gtk.Button):
         pass
 
-    def on_btn_fontsize_previous_clicked(self, btn_fontsize_previous):
+    def on_btn_fontsize_previous_clicked(self, btn_fontsize_previous: Gtk.Button):
         pass
 
-    def on_btn_preamble_open_clicked(self, btn_preamble_open):
+    def on_btn_preamble_open_clicked(self, btn_preamble_open: Gtk.Button):
         pass
 
-    def on_btn_preamble_saveas_clicked(self, btn_preamble_saveas):
+    def on_btn_preamble_saveas_clicked(self, btn_preamble_saveas: Gtk.Button):
         pass
 
-    def on_btn_preamble_save_clicked(self, btn_preamble_save):
+    def on_btn_preamble_save_clicked(self, btn_preamble_save: Gtk.Button):
         pass
+
+    def on_mit_wordwrap_toggled(self, mit_wordwrap: Gtk.CheckMenuItem):
+        self.config.gui_word_wrap = mit_wordwrap.get_active()
+        self.textview_code.set_wrap_mode(Gtk.WrapMode.WORD if self.config.gui_word_wrap else Gtk.WrapMode.NONE)
+
+    def on_mit_line_numbers_toggled(self, mit_line_numbers: Gtk.CheckMenuItem):
+        self.config.gui_line_numbers = mit_line_numbers.get_active()
+        # ToDo Insert GTKSourceView Code here for line numbering
+
+    def on_mit_spaces_toggled(self, mit_spaces: Gtk.CheckMenuItem):
+        self.config.gui_insert_spaces = mit_spaces.get_active()
+        # ToDo Insert GTKSourceView Code here for spaces
+
+    def on_mit_white_preview_bg_toggled(self, mit_white_preview_bg: Gtk.CheckMenuItem):
+        self.config.gui_preview_white_bg = mit_white_preview_bg.get_active()
+
+    def on_mit_exepaths_activate(self, widget):
+        exe_paths = dict()
+        for command in Cmds.ALL:
+            exe_paths[command] = self.config.get_executable(command)
+        dlg = DlgExePaths(exe_paths)
+        result = dlg.show()
+        if result:
+            for command, exe_path in dlg.modified_exe_paths.items():
+                self.config.set_executable(command, exe_path)

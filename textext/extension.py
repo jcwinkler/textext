@@ -16,9 +16,9 @@ from typing import Any, Callable, Tuple, Union
 import inkex
 from utils.log_util import logger
 from utils.environment import system_env
-from settings import SettingsTexText, Defaults
-from elements import TexTextSvgEle, TexTextEleMetaData
-from converter import TexToPdfConverter
+from textext.settings import SettingsTexText, Defaults
+from textext.elements import TexTextSvgEle, TexTextEleMetaData
+from textext.converter import TexToPdfConverter
 
 
 with open(os.path.join(os.path.dirname(__file__), "VERSION"), mode="r", encoding="utf-8") as version_file:
