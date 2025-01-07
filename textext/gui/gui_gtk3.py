@@ -9,13 +9,109 @@ file LICENSE.txt or go to https://github.com/textext/textext
 for full license details.
 """
 from abc import ABCMeta, abstractmethod
-from typing import Union
+from typing import Dict, List, Union
+import os
 from textext.elements import TexTextEleMetaData
 from textext.settings import SettingsTexText, Align
 from textext.utils.environment import Cmds
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk  # noqa
+from gi.repository import Gtk, Gdk, Gio  # noqa
+
+
+class DlgExePaths:
+    def __init__(self, exe_paths: Dict[str, str]):
+        self.exe_paths = exe_paths
+        self.builder: Gtk.Builder = Gtk.Builder()
+        self.builder.add_from_file("gui/executable_dlg.ui")
+        self.builder.connect_signals(self)
+        self.dialog = self.builder.get_object("dlg_exe_paths")
+
+        for command, exe_path in exe_paths.items():
+            try:
+                self.builder.get_object(f"ed_{command}").set_text(exe_path)
+            except AttributeError as err:
+                # ToDo -> Log message!
+                print(f"Failed to set exe path for command {command}")
+
+    def show(self):
+        self.dialog.run()
+
+    def on_dlg_exe_paths_delete_event(self, dialog: Gtk.Dialog, event: Gdk.Event):
+        self.dialog.hide()
+
+    def on_btn_ok_clicked(self, button: Gtk.Button):
+        for command in self.exe_paths.keys():
+            self.exe_paths[command] = self.builder.get_object(f"ed_{command}").get_text()
+        self.dialog.hide()
+
+    def on_btn_cancel_clicked(self, button: Gtk.Button):
+        self.on_dlg_exe_paths_delete_event(self.dialog, Gdk.EventType.DELETE)
+
+    def on_btn_pdflatex_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.PDFLATEX, [""])
+
+    def on_btn_xelatex_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.XELATEX, [""])
+
+    def on_btn_lualatex_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.LUALATEX, [""])
+
+    def on_btn_typst_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.TYPST, [""])
+
+    def on_btn_inkscape_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.INKSCAPE, [""])
+
+    def on_btn_dvisvgm_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.DVISVGM, [""])
+
+    def on_btn_pdf2svg_select_clicked(self, button: Gtk.Button):
+        self.select_executable(Cmds.PDF2SVG, [""])
+
+    def on_rb_pdf2svg_inkscape_toggled(self, button: Gtk.RadioButton):
+        pass
+
+    def on_rb_pdf2svg_dvisvgm_toggled(self, button: Gtk.RadioButton):
+        pass
+
+    def on_rb_pdf2svg_pdf2svg_toggled(self, button: Gtk.RadioButton):
+        pass
+
+    def select_executable(self, command: str, check_strings: List[str]):
+        entry: Gtk.Entry = self.builder.get_object(f"ed_{command}")
+        exe_path = self.select_file(entry.get_text())
+
+        # ToDo: Check if the selected executable is valid.
+
+        entry.set_text(exe_path)
+
+    def select_file(self, file_path: str) -> str:
+
+        dlg = Gtk.FileChooserDialog(title="Select executable...",
+                                    transient_for=self.dialog,
+                                    action=Gtk.FileChooserAction.OPEN)
+        dlg.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        if os.path.isfile(file_path):
+            dlg.set_file(Gio.File.new_for_path(file_path))
+        else:
+            dlg.set_file(Gio.File.new_for_path("/"))
+
+        # ToDo: Implement correct filtering for applications
+        # exe_filter = Gtk.FileFilter()
+        # exe_filter.set_name("Executables")
+        # exe_filter.add_mime_type("application/x-binary")
+        # exe_filter.add_pattern("*")
+        # dlg.set_filter(exe_filter)
+
+        response = dlg.run()
+        new_filepath = file_path
+        if response == Gtk.ResponseType.OK:
+            new_filepath = dlg.get_filename()
+
+        dlg.destroy()
+
+        return new_filepath
 
 
 class TexTextGuiBase:
@@ -68,14 +164,16 @@ class TexTextGuiGTK3(TexTextGuiBase):
     def __init__(self, version_str,  node_meta_data, config, svg_build_func, png_build_func=None):
         super().__init__(version_str,  node_meta_data, config, svg_build_func, png_build_func)
         self.builder: Gtk.Builder = Gtk.Builder()
-
-    def show(self):
         self.builder.add_from_file("gui/textext_gui.ui")
         self.builder.connect_signals(self)
 
         self.window: Gtk.Window = self.builder.get_object("textext_gui")
         self.buffer_code: Gtk.TextBuffer = self.builder.get_object("tbf_texcode")
+        self.textview_code: Gtk.TextView = self.builder.get_object("tev_texcode")
         self.buffer_preamble: Gtk.TextBuffer = self.builder.get_object("tbf_preamble")
+        self.textview_preamble: Gtk.TextView = self.builder.get_object("tev_preamble")
+
+    def show(self):
 
         # Command box
         widget = self.builder.get_object("cmb_cmd")
@@ -119,10 +217,28 @@ class TexTextGuiGTK3(TexTextGuiBase):
 
         # View menu
         self.builder.get_object("mit_wordwrap").set_active(self.config.gui_word_wrap)
-        self.builder.get_object("mit_linenumbers").set_active(self.config.gui_line_numbers)
+        self.builder.get_object("mit_line_numbers").set_active(self.config.gui_line_numbers)
         self.builder.get_object("mit_spaces").set_active(self.config.gui_insert_spaces)
         self.builder.get_object("mit_autoindent").set_active(self.config.gui_auto_indent)
-        self.builder.get_object("mit_whitepreviewbg").set_active(self.config.gui_auto_indent)
+        self.builder.get_object("mit_white_preview_bg").set_active(self.config.gui_preview_white_bg)
+        widget = self.builder.get_object(f"mit_{self.config.gui_font_size}pt")
+        if widget:
+            widget.set_active(True)
+
+        widget = self.builder.get_object(f"mit_tabw{self.config.gui_tab_width}")
+        if widget:
+            widget.set_active(True)
+
+        # Settings menus
+        widget = self.builder.get_object(f"mit_new_node_{self.config.gui_new_node_content}")
+        if widget:
+            widget.set_active(True)
+
+        self.builder.get_object(f"mit_confirm_close").set_active(self.config.gui_confirm_close)
+
+        widget = self.builder.get_object(f"mit_close_shortcut_{self.config.gui_close_shortcut}")
+        if widget:
+            widget.set_active(True)
 
         self.window.show()
         Gtk.main()
@@ -256,32 +372,55 @@ class TexTextGuiGTK3(TexTextGuiBase):
     def on_win_main_destroy(widget):
         Gtk.main_quit()
 
-    def on_btn_execute_clicked(self, btn_execute):
+    def on_btn_execute_clicked(self, btn_execute: Gtk.Button):
         pass
 
-    def on_btn_preview_clicked(self, btn_preview):
+    def on_btn_preview_clicked(self, btn_preview: Gtk.Button):
         pass
 
-    def on_btn_cancel_clicked(self, btn_cancel):
+    def on_btn_cancel_clicked(self, btn_cancel: Gtk.Button):
         self.on_win_main_destroy(btn_cancel)
 
-    def on_btn_scale_reset_clicked(self, btn_scale_reset):
+    def on_btn_scale_reset_clicked(self, btn_scale_reset: Gtk.Button):
         pass
 
-    def on_btn_scale_previous_clicked(self, btn_scale_previous):
+    def on_btn_scale_previous_clicked(self, btn_scale_previous: Gtk.Button):
         pass
 
-    def on_btn_fontsize_reset_clicked(self, btn_fontsize_reset):
+    def on_btn_fontsize_reset_clicked(self, btn_fontsize_reset: Gtk.Button):
         pass
 
-    def on_btn_fontsize_previous_clicked(self, btn_fontsize_previous):
+    def on_btn_fontsize_previous_clicked(self, btn_fontsize_previous: Gtk.Button):
         pass
 
-    def on_btn_preamble_open_clicked(self, btn_preamble_open):
+    def on_btn_preamble_open_clicked(self, btn_preamble_open: Gtk.Button):
         pass
 
-    def on_btn_preamble_saveas_clicked(self, btn_preamble_saveas):
+    def on_btn_preamble_saveas_clicked(self, btn_preamble_saveas: Gtk.Button):
         pass
 
-    def on_btn_preamble_save_clicked(self, btn_preamble_save):
+    def on_btn_preamble_save_clicked(self, btn_preamble_save: Gtk.Button):
         pass
+
+    def on_mit_wordwrap_toggled(self, mit_wordwrap: Gtk.CheckMenuItem):
+        self.config.gui_word_wrap = mit_wordwrap.get_active()
+        self.textview_code.set_wrap_mode(Gtk.WrapMode.WORD if self.config.gui_word_wrap else Gtk.WrapMode.NONE)
+
+    def on_mit_line_numbers_toggled(self, mit_line_numbers: Gtk.CheckMenuItem):
+        self.config.gui_line_numbers = mit_line_numbers.get_active()
+        # ToDo Insert GTKSourceView Code here for line numbering
+
+    def on_mit_spaces_toggled(self, mit_spaces: Gtk.CheckMenuItem):
+        self.config.gui_insert_spaces = mit_spaces.get_active()
+        # ToDo Insert GTKSourceView Code here for spaces
+
+    def on_mit_white_preview_bg_toggled(self, mit_white_preview_bg: Gtk.CheckMenuItem):
+        self.config.gui_preview_white_bg = mit_white_preview_bg.get_active()
+
+    def on_mit_exepaths_activate(self, widget):
+        exe_paths = dict()
+        for command in Cmds.ALL:
+            exe_paths[command] = self.config.get_executable(command)
+
+        dlg = DlgExePaths(exe_paths)
+        dlg.show()

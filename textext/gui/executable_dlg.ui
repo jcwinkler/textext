@@ -7,6 +7,11 @@
     <property name="can-focus">False</property>
     <property name="icon-name">document-open</property>
   </object>
+  <object class="GtkImage" id="img_inkscape_select">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">document-open</property>
+  </object>
   <object class="GtkImage" id="img_lualatex_select">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -34,8 +39,11 @@
   </object>
   <object class="GtkDialog" id="dlg_exe_paths">
     <property name="can-focus">False</property>
+    <property name="modal">True</property>
+    <property name="window-position">center-on-parent</property>
     <property name="default-width">600</property>
     <property name="type-hint">dialog</property>
+    <signal name="delete-event" handler="on_dlg_exe_paths_delete_event" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="grp_main">
         <property name="can-focus">False</property>
@@ -52,6 +60,7 @@
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="use-stock">True</property>
+                <signal name="clicked" handler="on_btn_ok_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -376,11 +385,51 @@
                     <property name="margin-top">10</property>
                     <property name="active">True</property>
                     <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_rb_pdf2svg_inkscape_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkEntry" id="ed_inkscape">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="margin-start">25</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_inkscape_select">
+                        <property name="label" translatable="yes">Select...</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="image">img_inkscape_select</property>
+                        <signal name="clicked" handler="on_btn_inkscape_select_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -391,6 +440,7 @@
                     <property name="receives-default">False</property>
                     <property name="draw-indicator">True</property>
                     <property name="group">rb_pdf2svg_inkscape</property>
+                    <signal name="toggled" handler="on_rb_pdf2svg_dvisvgm_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -423,6 +473,7 @@
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="image">img_dvisvgm_select</property>
+                        <signal name="clicked" handler="on_btn_dvisvgm_select_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -445,6 +496,7 @@
                     <property name="receives-default">False</property>
                     <property name="draw-indicator">True</property>
                     <property name="group">rb_pdf2svg_inkscape</property>
+                    <signal name="toggled" handler="on_rb_pdf2svg_pdf2svg_toggled" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -479,6 +531,7 @@
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="image">img_pdf2svg_select</property>
+                        <signal name="clicked" handler="on_btn_pdf2svg_select_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
