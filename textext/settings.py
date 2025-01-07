@@ -284,8 +284,14 @@ class SettingsTexText(SettingsBase):
         self._data["gui"]["word_wrap"] = value
 
     def get_executable(self, command: str) -> str:
+        """
+        Returns the path to the executable associated with a command. If no path is
+        stored in the settngs the system default path is returned. If no such path is
+        defined an empty string is returned.
+        """
         try:
-            return self._data.get(f"{command}-executable", system_env.executable_names[command][0])
+            exe_name = self._data.get(f"{command}-executable", system_env.executable_names[command][0])
+            return exe_name if exe_name is not None else ""
         except KeyError:
             return ""
 

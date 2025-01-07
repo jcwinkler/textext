@@ -9,6 +9,7 @@ file LICENSE.txt or go to https://github.com/textext/textext
 for full license details.
 """
 from abc import ABCMeta, abstractmethod
+import shutil
 from typing import Dict, List, Union
 import os
 from textext.elements import TexTextEleMetaData
@@ -82,9 +83,19 @@ class DlgExePaths:
         entry: Gtk.Entry = self.builder.get_object(f"ed_{command}")
         exe_path = self.select_file(entry.get_text())
 
-        # ToDo: Check if the selected executable is valid.
-
-        entry.set_text(exe_path)
+        if shutil.which(exe_path):
+            entry.set_text(exe_path)
+        else:
+            dlg = Gtk.MessageDialog(transient_for=self.dialog,
+                                    flags=0,
+                                    message_type=Gtk.MessageType.WARNING,
+                                    buttons=Gtk.ButtonsType.YES_NOL,
+                                    text=f"The specified executable '{exe_path}' for the command '{command}' "
+                                         f"is not a valid executable! Continue anyway?"
+                                    )
+            res = dlg.run()
+            if res == Gtk.ResponseType.YES:
+                entry.set_text(exe_path)
 
     def select_file(self, file_path: str) -> str:
 
