@@ -12,9 +12,10 @@ from abc import ABCMeta, abstractmethod
 import shutil
 from typing import Dict, List, Union
 import os
+import subprocess as sp
 from textext.elements import TexTextEleMetaData
 from textext.settings import SettingsTexText, Align
-from textext.utils.environment import Cmds
+from textext.utils.environment import Cmds, system_env
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, Gio  # noqa
@@ -22,13 +23,15 @@ from gi.repository import Gtk, Gdk, Gio  # noqa
 
 class DlgExePaths:
     def __init__(self, exe_paths: Dict[str, str]):
-        self.exe_paths = exe_paths
+        self.exe_paths: Dict[str, str] = exe_paths
+        self.checked_exe_paths: Dict[str, bool] = {}
         self.builder: Gtk.Builder = Gtk.Builder()
         self.builder.add_from_file("gui/executable_dlg.ui")
         self.builder.connect_signals(self)
         self.dialog = self.builder.get_object("dlg_exe_paths")
 
         for command, exe_path in exe_paths.items():
+            self.checked_exe_paths[command] = False
             try:
                 self.builder.get_object(f"ed_{command}").set_text(exe_path)
             except AttributeError as err:
@@ -50,25 +53,25 @@ class DlgExePaths:
         self.on_dlg_exe_paths_delete_event(self.dialog, Gdk.EventType.DELETE)
 
     def on_btn_pdflatex_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.PDFLATEX, [""])
+        self.set_executable(Cmds.PDFLATEX, ["pdfTeX"])
 
     def on_btn_xelatex_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.XELATEX, [""])
+        self.set_executable(Cmds.XELATEX, ["XeTeX"])
 
     def on_btn_lualatex_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.LUALATEX, [""])
+        self.set_executable(Cmds.LUALATEX, ["LuaHBTeX"])
 
     def on_btn_typst_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.TYPST, [""])
+        self.set_executable(Cmds.TYPST, ["typst"])
 
     def on_btn_inkscape_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.INKSCAPE, [""])
+        self.set_executable(Cmds.INKSCAPE, ["Inkscape"])
 
     def on_btn_dvisvgm_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.DVISVGM, [""])
+        self.set_executable(Cmds.DVISVGM, ["dvisvgm"])
 
     def on_btn_pdf2svg_select_clicked(self, button: Gtk.Button):
-        self.select_executable(Cmds.PDF2SVG, [""])
+        self.set_executable(Cmds.PDF2SVG, ["pdf2svg"])
 
     def on_rb_pdf2svg_inkscape_toggled(self, button: Gtk.RadioButton):
         pass
@@ -79,26 +82,62 @@ class DlgExePaths:
     def on_rb_pdf2svg_pdf2svg_toggled(self, button: Gtk.RadioButton):
         pass
 
-    def select_executable(self, command: str, check_strings: List[str]):
-        entry: Gtk.Entry = self.builder.get_object(f"ed_{command}")
-        exe_path = self.select_file(entry.get_text())
+    def check_executable(self, command: str, exe_path: str, check_strings: List[str]) -> bool:
+        """
 
+        :param command:
+        :param exe_path:
+        :param check_strings:
+        :return:
+        """
+        result = False
         if shutil.which(exe_path):
-            entry.set_text(exe_path)
-        else:
+            try:
+                sout, _ = system_env.call_command([exe_path, "--version"])
+                for cs in check_strings:
+                    if cs in sout:
+                        result = True
+                        break
+            except sp.CalledProcessError:
+                pass
+
+        if not result:
             dlg = Gtk.MessageDialog(transient_for=self.dialog,
                                     flags=0,
                                     message_type=Gtk.MessageType.WARNING,
                                     buttons=Gtk.ButtonsType.YES_NOL,
                                     text=f"The specified executable '{exe_path}' for the command '{command}' "
-                                         f"is not a valid executable! Continue anyway?"
+                                         f"is not a valid executable or the command '{exe_path} --version' does not "
+                                         f"return a string containing one of the substrings'{check_strings}'! "
+                                         f"Continue anyway?"
                                     )
-            res = dlg.run()
-            if res == Gtk.ResponseType.YES:
-                entry.set_text(exe_path)
+            dlg_result = dlg.run()
+            result = dlg_result == Gtk.ResponseType.YES
+
+        return result
+
+    def set_executable(self, command: str, check_strings: List[str]) -> bool:
+        """
+
+        :param command:
+        :param check_strings:
+        :return:
+        """
+        entry: Gtk.Entry = self.builder.get_object(f"ed_{command}")
+        exe_path = self.select_file(entry.get_text())
+        if self.check_executable(command, exe_path, check_strings):
+            entry.set_text(exe_path)
+            self.checked_exe_paths[command] = True
+            return True
+        else:
+            return False
 
     def select_file(self, file_path: str) -> str:
-
+        """
+        
+        :param file_path:
+        :return:
+        """
         dlg = Gtk.FileChooserDialog(title="Select executable...",
                                     transient_for=self.dialog,
                                     action=Gtk.FileChooserAction.OPEN)
