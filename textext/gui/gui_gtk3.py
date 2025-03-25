@@ -8,17 +8,44 @@ TexText is released under the 3-Clause BSD license. See
 file LICENSE.txt or go to https://github.com/textext/textext
 for full license details.
 """
+import sys
 from abc import ABCMeta, abstractmethod
 import shutil
 from typing import Dict, List, Union
 import os
 import subprocess as sp
+
+import textext.extension
 from textext.elements import TexTextEleMetaData
 from textext.settings import SettingsTexText, Align
 from textext.utils.environment import Cmds, system_env
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, Gio  # noqa
+
+
+class DlgAbout:
+    def __init__(self):
+        self.builder: Gtk.Builder = Gtk.Builder()
+        self.builder.add_from_file("gui/about_dlg.ui")
+        self.builder.connect_signals(self)
+        self.dialog = self.builder.get_object("dlg_about_box")
+
+        self.builder.get_object("ed_textext_version").set_text(textext.extension.__version__)
+        self.builder.get_object("ed_python_version").set_text(sys.version)
+        self.builder.get_object("ed_python_interpreter_path").set_text(sys.executable)
+        self.builder.get_object("ed_gtk_version").set_text(f"{Gtk.MAJOR_VERSION}.{Gtk.MINOR_VERSION}.{Gtk.MICRO_VERSION}")
+        self.builder.get_object("tb_system_path").set_text(os.environ["PATH"])
+        self.builder.get_object("tb_python_path").set_text(str(sys.path))
+
+    def show(self):
+        self.dialog.run()
+
+    def dlg_about_box_delete_event(self, dialog: Gtk.Dialog, event: Gdk.Event):
+        self.dialog.destroy()
+
+    def btn_close_clicked(self, button):
+        self.dlg_about_box_delete_event(self.dialog, Gdk.EventType.DELETE)
 
 
 class DlgExePaths:
@@ -498,3 +525,7 @@ class TexTextGuiGTK3(TexTextGuiBase):
         if result:
             for command, exe_path in dlg.modified_exe_paths.items():
                 self.config.set_executable(command, exe_path)
+
+    def on_mit_about_activate(self, widget):
+        dlg = DlgAbout()
+        dlg.show()
