@@ -52,7 +52,7 @@ class Defaults:
     INKEX_VERSION = "0.0"
     INKSCAPE_VERSION = "0.0"
     JACOBIAN_SQRT = 1.0
-    PREAMBLE = "packages.tex"
+    PREAMBLE = "default_packages.tex"
     SCALE = 1.0
     STROKE_TO_PATH = False
     TEXCMD = Cmds.PDFLATEX
